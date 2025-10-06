@@ -6,9 +6,14 @@ from typing import Dict, Any
 import sys
 import json
 import time
+import re
+from pathlib import Path
 from ..utils import setup_logging, ensure_directory, write_file
 
 logger = setup_logging()
+
+MIN_PYTHON_VERSION = "3.10"
+FALLBACK_PYTHON_VERSIONS = ["3.10", "3.11", "3.12"]
 
 
 def _run(cmd: list[str], cwd: str | None = None, timeout: int = 1800) -> tuple[int, str, str]:
@@ -27,6 +32,87 @@ def _run(cmd: list[str], cwd: str | None = None, timeout: int = 1800) -> tuple[i
         return proc.returncode, proc.stdout, proc.stderr
     except Exception as e:
         return 1, "", str(e)
+
+def _enforce_minimum_python(version_str: str) -> str:
+    if not version_str:
+        return MIN_PYTHON_VERSION
+    try:
+        parts = version_str.replace("python", "").replace("Python", "").strip().split(".")
+        major = int(parts[0]) if len(parts) > 0 else 3
+        minor = int(parts[1]) if len(parts) > 1 else 10
+        if (major, minor) < (3, 10):
+            return MIN_PYTHON_VERSION
+        return f"{major}.{minor}"
+    except:
+        return MIN_PYTHON_VERSION
+
+def _parse_python_requirement(requires_python: str) -> str:
+    if not requires_python:
+        return MIN_PYTHON_VERSION
+    
+    version = MIN_PYTHON_VERSION
+    if ">=" in requires_python:
+        match = re.search(r">=\s*([\d.]+)", requires_python)
+        version = match.group(1) if match else MIN_PYTHON_VERSION
+    elif "==" in requires_python:
+        match = re.search(r"==\s*([\d.]+)", requires_python)
+        version = match.group(1) if match else MIN_PYTHON_VERSION
+    elif "<=" in requires_python:
+        match = re.search(r"<=\s*([\d.]+)", requires_python)
+        version = match.group(1) if match else MIN_PYTHON_VERSION
+    elif re.match(r"^\d+\.\d+", requires_python):
+        version = requires_python
+    
+    return _enforce_minimum_python(version)
+
+def _scan_docs_for_python_version(source_dir: str) -> dict:
+    hints = {}
+    source_path = Path(source_dir)
+    
+    for file in [".python-version", "runtime.txt"]:
+        path = source_path / file
+        if path.exists():
+            try:
+                content = path.read_text().strip()
+                if content:
+                    hints["explicit_version"] = _enforce_minimum_python(content)
+            except:
+                pass
+    
+    readme = source_path / "README.md"
+    if readme.exists():
+        try:
+            content = readme.read_text()
+            if match := re.search(r"[Pp]ython\s+([\d.]+)", content):
+                hints["readme_version"] = _enforce_minimum_python(match.group(1))
+            if match := re.search(r"requires-python\s*[=><!]+\s*([\d.]+)", content):
+                hints["requires_python"] = _enforce_minimum_python(match.group(1))
+        except:
+            pass
+    
+    return hints
+
+def _extract_requires_python(pyproject_path: str) -> str:
+    if not os.path.isfile(pyproject_path):
+        return MIN_PYTHON_VERSION
+    try:
+        import tomli
+        with open(pyproject_path, "rb") as f:
+            data = tomli.load(f)
+        requires_python = data.get("project", {}).get("requires-python", "")
+        if requires_python:
+            return _parse_python_requirement(requires_python)
+    except:
+        try:
+            with open(pyproject_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    if "requires-python" in line.lower():
+                        match = re.search(r'["\']([^"\']+)["\']', line)
+                        if match:
+                            return _parse_python_requirement(match.group(1))
+        except:
+            pass
+    return MIN_PYTHON_VERSION
 
 def _parse_environment_yml(yml_path: str) -> dict:
     data = {"channels": [], "conda_deps": [], "pip_deps": [], "python": None}
@@ -226,7 +312,7 @@ def _check_conda_available() -> bool:
 
 
 def _create_conda_env(env_name: str, repo_root: str, deps: Dict[str, Any]) -> Dict[str, Any]:
-    env_info = {"type": "conda", "name": env_name, "files": {}, "python": "3.10", "exec_prefix": []}
+    env_info = {"type": "conda", "name": env_name, "files": {}, "python": MIN_PYTHON_VERSION, "exec_prefix": []}
     
     conda_exe = os.environ.get("CONDA_EXE")
     if not conda_exe or not os.path.exists(conda_exe):
@@ -237,6 +323,9 @@ def _create_conda_env(env_name: str, repo_root: str, deps: Dict[str, Any]) -> Di
             return None
     
     logger.info(f"Using conda: {conda_exe}")
+    
+    source_dir = os.path.join(repo_root, "source")
+    doc_hints = _scan_docs_for_python_version(source_dir) if os.path.isdir(source_dir) else {}
     
     env_yml = os.path.join(repo_root, "environment.yml")
     source_env_yml = os.path.join(repo_root, "source", "environment.yml")
@@ -260,42 +349,88 @@ def _create_conda_env(env_name: str, repo_root: str, deps: Dict[str, Any]) -> Di
                 env_info["files"]["environment_yml"] = env_yml_path
                 return env_info
             yml_data = _parse_environment_yml(env_yml_path)
-            preferred_py = yml_data.get("python") or "3.10"
-            code3, out3, err3 = _run([conda_exe, "create", "-n", env_name, f"python={preferred_py}", "--yes"]) 
-            if code3 == 0:
+            yml_python = yml_data.get("python")
+            
+            preferred_versions = []
+            if yml_python:
+                preferred_versions.append(_enforce_minimum_python(yml_python))
+            if doc_hints.get("explicit_version"):
+                preferred_versions.append(doc_hints["explicit_version"])
+            if doc_hints.get("readme_version"):
+                preferred_versions.append(doc_hints["readme_version"])
+            
+            preferred_versions.extend(FALLBACK_PYTHON_VERSIONS)
+            preferred_versions = list(dict.fromkeys(preferred_versions))
+            
+            created = False
+            selected_py = MIN_PYTHON_VERSION
+            for py_ver in preferred_versions:
+                code3, out3, err3 = _run([conda_exe, "create", "-n", env_name, f"python={py_ver}", "--yes", "--solver=libmamba"])
+                if code3 == 0:
+                    created = True
+                    selected_py = py_ver
+                    logger.info(f"Created conda environment with Python {py_ver}")
+                    break
+            
+            if created:
                 env_info["files"]["environment_yml"] = env_yml_path
-                env_info["python"] = preferred_py
+                env_info["python"] = selected_py
                 install_args = [conda_exe, "run", "-n", env_name, "conda", "install", "-y"]
                 channels = yml_data.get("channels") or []
                 for ch in channels:
                     install_args.extend(["-c", ch])
-                conda_deps = [d for d in (yml_data.get("conda_deps") or []) if d]
+                conda_deps = [d for d in (yml_data.get("conda_deps") or []) if d and not d.startswith("python")]
                 if conda_deps:
                     _run(install_args + conda_deps, cwd=repo_root, timeout=3600)
                 pip_deps = yml_data.get("pip_deps") or []
                 if pip_deps:
                     _run([conda_exe, "run", "-n", env_name, "python", "-m", "pip", "install"] + pip_deps, cwd=repo_root, timeout=3600)
                 return env_info
-            logger.warning(f"Failed to honor environment.yml: {err3 or err2 or err or out3 or out2 or out}")
+            
+            logger.warning(f"Failed to create conda environment with any Python version")
             return None
     
     logger.info(f"Creating base conda environment: {env_name}")
-    code, out, err = _run([conda_exe, "create", "-n", env_name, "python=3.10", "--yes"])
-    if code == 0:
-        logger.info(f"Base conda environment created successfully: {env_name}")
+    
+    preferred_versions = []
+    pyproject_path = None
+    pyproject_root = os.path.join(repo_root, "pyproject.toml")
+    source_pyproject = os.path.join(repo_root, "source", "pyproject.toml")
+    if os.path.exists(pyproject_root):
+        pyproject_path = pyproject_root
+    elif os.path.exists(source_pyproject):
+        pyproject_path = source_pyproject
+    
+    if pyproject_path:
+        pyproject_version = _extract_requires_python(pyproject_path)
+        if pyproject_version != MIN_PYTHON_VERSION:
+            preferred_versions.append(pyproject_version)
+    
+    if doc_hints.get("explicit_version"):
+        preferred_versions.append(doc_hints["explicit_version"])
+    if doc_hints.get("readme_version"):
+        preferred_versions.append(doc_hints["readme_version"])
+    
+    preferred_versions.extend(FALLBACK_PYTHON_VERSIONS)
+    preferred_versions = list(dict.fromkeys(preferred_versions))
+    
+    created = False
+    selected_py = MIN_PYTHON_VERSION
+    for py_ver in preferred_versions:
+        code, out, err = _run([conda_exe, "create", "-n", env_name, f"python={py_ver}", "--yes", "--solver=libmamba"])
+        if code == 0:
+            created = True
+            selected_py = py_ver
+            logger.info(f"Base conda environment created with Python {py_ver}")
+            break
+    
+    if created:
+        env_info["python"] = selected_py
         if not deps.get("has_environment_yml"):
-            if deps.get("pyproject"):
-                pyproject_path = None
-                pyproject_root = os.path.join(repo_root, "pyproject.toml")
-                source_pyproject = os.path.join(repo_root, "source", "pyproject.toml")
-                if os.path.exists(pyproject_root):
-                    pyproject_path = pyproject_root
-                elif os.path.exists(source_pyproject):
-                    pyproject_path = source_pyproject
-                if pyproject_path:
-                    code, out, err = _run([conda_exe, "run", "-n", env_name, "pip", "install", "-e", os.path.dirname(pyproject_path)])
-                    if code == 0:
-                        env_info["files"]["pyproject_toml"] = pyproject_path
+            if deps.get("pyproject") and pyproject_path:
+                code, out, err = _run([conda_exe, "run", "-n", env_name, "pip", "install", "-e", os.path.dirname(pyproject_path)])
+                if code == 0:
+                    env_info["files"]["pyproject_toml"] = pyproject_path
             if deps.get("has_requirements_txt"):
                 req_txt = os.path.join(repo_root, "requirements.txt")
                 source_req_txt = os.path.join(repo_root, "source", "requirements.txt")
@@ -312,7 +447,7 @@ def _create_conda_env(env_name: str, repo_root: str, deps: Dict[str, Any]) -> Di
         
         return env_info
     else:
-        logger.error(f"Failed to create conda environment: {err or out}")
+        logger.error(f"Failed to create conda environment with any Python version")
         return None
 
 
@@ -322,7 +457,33 @@ def _create_venv_env(repo_root: str, repo_name: str, deps: Dict[str, Any]) -> Di
     env_name = f"{repo_name}_{timestamp}_venv"
     env_path = os.path.join(repo_root, env_name)
     
-    env_info = {"type": "venv", "name": env_name, "path": env_path, "files": {}, "python": "3.10", "exec_prefix": []}
+    source_dir = os.path.join(repo_root, "source")
+    doc_hints = _scan_docs_for_python_version(source_dir) if os.path.isdir(source_dir) else {}
+    
+    preferred_versions = []
+    pyproject_path = None
+    pyproject_root = os.path.join(repo_root, "pyproject.toml")
+    source_pyproject = os.path.join(repo_root, "source", "pyproject.toml")
+    if os.path.exists(pyproject_root):
+        pyproject_path = pyproject_root
+    elif os.path.exists(source_pyproject):
+        pyproject_path = source_pyproject
+    
+    if pyproject_path:
+        pyproject_version = _extract_requires_python(pyproject_path)
+        if pyproject_version != MIN_PYTHON_VERSION:
+            preferred_versions.append(pyproject_version)
+    
+    if doc_hints.get("explicit_version"):
+        preferred_versions.append(doc_hints["explicit_version"])
+    if doc_hints.get("readme_version"):
+        preferred_versions.append(doc_hints["readme_version"])
+    
+    preferred_versions.extend(FALLBACK_PYTHON_VERSIONS)
+    preferred_versions = list(dict.fromkeys(preferred_versions))
+    selected_py = preferred_versions[0] if preferred_versions else MIN_PYTHON_VERSION
+    
+    env_info = {"type": "venv", "name": env_name, "path": env_path, "files": {}, "python": selected_py, "exec_prefix": []}
     
     venv_py = _venv_python_path(env_path)
     if not os.path.isfile(venv_py):
@@ -337,14 +498,12 @@ def _create_venv_env(repo_root: str, repo_name: str, deps: Dict[str, Any]) -> Di
         _run([venv_py, "-m", "pip", "install", "-U", "pip"], cwd=repo_root)
         
         installed_deps = False
-        if deps.get("pyproject"):
-            pyproject_path = next((p for p in [os.path.join(repo_root, "pyproject.toml"), os.path.join(repo_root, "source", "pyproject.toml")] if os.path.exists(p)), None)
-            if pyproject_path:
-                logger.info(f"Installing pyproject.toml dependencies in venv environment: {env_name}")
-                code, out, err = _run([venv_py, "-m", "pip", "install", f"-e {os.path.dirname(pyproject_path)}"], cwd=repo_root)
-                if code == 0:
-                    env_info["files"]["pyproject_toml"] = pyproject_path
-                    installed_deps = True
+        if deps.get("pyproject") and pyproject_path:
+            logger.info(f"Installing pyproject.toml dependencies in venv environment: {env_name}")
+            code, out, err = _run([venv_py, "-m", "pip", "install", f"-e {os.path.dirname(pyproject_path)}"], cwd=repo_root)
+            if code == 0:
+                env_info["files"]["pyproject_toml"] = pyproject_path
+                installed_deps = True
 
         if deps.get("has_requirements_txt"):
             req_txt_path = next((p for p in [os.path.join(repo_root, "requirements.txt"), os.path.join(repo_root, "source", "requirements.txt")] if os.path.exists(p)), None)
