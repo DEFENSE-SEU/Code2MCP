@@ -24,6 +24,11 @@ Code2MCP is an automated workflow system that transforms existing code repositor
    - Comprehensive logging and status tracking
    - Intelligent error recovery and retry mechanisms
 
+4. **End-to-End Automation**
+   - Automated deployment to HuggingFace Spaces
+   - Automatic client configuration (Cursor/Claude Code)
+   - One command from code to production
+
 ## Quick Start
 
 ### 1. Environment Setup
@@ -49,6 +54,14 @@ python main.py https://github.com/username/repo
 # Specify output directory
 python main.py https://github.com/username/repo --output ./my_output
 ```
+
+## End-to-End Automation
+
+**What Happens:**
+1. Analyzes code and generates MCP service ✓
+2. Deploys to HuggingFace Spaces ✓
+3. Configures Cursor/Claude Code ✓
+4. Ready to use immediately ✓
 
 ## Workflow Process
 
@@ -114,11 +127,13 @@ Here are a few examples you can use right away:
 
 ### How to Configure in Cursor
 
-1.  **Open MCP Configuration File**: Navigate to your AI agent's configuration file. For Cursor, this is located at: `c:\Users\[Username]\.cursor\mcp.json`.
+**Automatic (Recommended):**
+Set `AUTO_CONNECT_CLIENT=cursor` in `.env`, the service will be configured automatically after deployment.
 
-2.  **Add Your New Tool**: In the `mcpServers` object, copy and paste the configuration snippet for the tool you want to add from the list above.
-
-3.  **Reload Configuration**: Restart Cursor or use its reload function to apply the changes. Your new MCP tool will now be available.
+**Manual:**
+1. Open MCP configuration file: `~/.cursor/mcp.json` (or `C:\Users\[Username]\.cursor\mcp.json` on Windows)
+2. Add the service configuration in `mcpServers`
+3. Restart Cursor
 
 -----
 
