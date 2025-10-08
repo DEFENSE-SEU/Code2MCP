@@ -4,8 +4,10 @@ import os
 import json
 import time
 import re
+from pathlib import Path
 from typing import Dict, Any, List
 from ..utils import setup_logging, write_file, get_llm_service
+from ..tools.deploy_hf import deploy_to_huggingface
 
 logger = setup_logging()
 
@@ -678,6 +680,20 @@ def finalize_node(state: Dict[str, Any]) -> Dict[str, Any]:
     state["technical_report"] = technical_report
     
     _save_final_reports(state, workflow_summary, technical_report)
+    
+    if state.get("workflow_status") == "success":
+        auto_deploy = os.getenv("AUTO_DEPLOY_HF", "false").lower() == "true"
+        if auto_deploy:
+            logger.info("AUTO_DEPLOY_HF enabled, deploying to HuggingFace...")
+            repo = state.get("repository", {})
+            repo_root = repo.get("local_paths", {}).get("repo_root")
+            if repo_root:
+                result = deploy_to_huggingface(repo_root)
+                if result.get("success"):
+                    logger.info(f"HuggingFace deployment successful: {result.get('url')}")
+                    state["huggingface_deployment"] = result
+                else:
+                    logger.warning(f"HuggingFace deployment failed: {result.get('error')}")
     
     logger.info(f"Workflow summary generated, status: {state['status']}")
     if errors:
