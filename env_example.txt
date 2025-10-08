@@ -1,5 +1,20 @@
 # Code2MCP Environment Variables Configuration Example
 
+# ==================== HuggingFace Configuration ====================
+# HuggingFace token for deploying MCP services to HuggingFace Spaces
+# Get your token at: https://huggingface.co/settings/tokens
+HF_TOKEN=your_huggingface_token_here
+HF_USERNAME=your_hf_username
+
+# Auto-deploy to HuggingFace after workflow completion (true/false)
+AUTO_DEPLOY_HF=true
+
+# ==================== Auto-Connect Configuration ====================
+# Auto-connect to client after successful deployment
+# Options: cursor | claude 
+# Default: cursor
+AUTO_CONNECT_CLIENT=cursor
+
 # ==================== Jina Configuration ====================
 # (Optional) Jina Reader API key for more precise repository analysis
 # Get your API key at: https://jina.ai/
@@ -85,9 +100,13 @@ ANALYSIS_MAX_FILE_TOKENS=2000
 ANALYSIS_MIN_CHARS=500
 
 # ==================== Usage Instructions ====================
-# 1. Copy this file to .env
-# 2. Set JINA_API_KEY (optional) for enhanced DeepWiki/web analysis
-# 3. Select model provider (MODEL_PROVIDER)
-# 4. Set API keys for models (e.g., OPENAI_API_KEY/DEEPSEEK_API_KEY/...)
-# 5. Adjust other parameters as needed
+# 1. Copy this file to .env: cp env_example.txt .env
+# 2. Set HF_TOKEN and HF_USERNAME for HuggingFace Spaces deployment (already configured)
+# 3. Set JINA_API_KEY (optional) for enhanced DeepWiki/web analysis
+# 4. Select model provider (MODEL_PROVIDER)
+# 5. Set API keys for models (e.g., OPENAI_API_KEY/DEEPSEEK_API_KEY/...)
+# 6. Adjust other parameters as needed
+#
+# Deploy to HuggingFace:
+#   python deploy_to_hf.py workspace\your-project
 
