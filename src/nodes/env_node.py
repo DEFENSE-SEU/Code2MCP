@@ -1,4 +1,3 @@
-# Environment Node - Create isolated environment and run original project minimal validation
 from __future__ import annotations
 import os
 import subprocess
@@ -14,6 +13,7 @@ logger = setup_logging()
 
 MIN_PYTHON_VERSION = "3.10"
 FALLBACK_PYTHON_VERSIONS = ["3.10", "3.11", "3.12"]
+BASE_PACKAGES = ["fastmcp", "pytest", "pytest-asyncio", "papermill", "nbclient", "ipykernel", "imagehash"]
 
 
 def _run(cmd: list[str], cwd: str | None = None, timeout: int = 1800) -> tuple[int, str, str]:
@@ -426,11 +426,22 @@ def _create_conda_env(env_name: str, repo_root: str, deps: Dict[str, Any]) -> Di
     
     if created:
         env_info["python"] = selected_py
+        
+        logger.info("Installing base packages in conda environment")
+        _run([conda_exe, "run", "-n", env_name, "pip", "install"] + BASE_PACKAGES, cwd=repo_root, timeout=1800)
+        
         if not deps.get("has_environment_yml"):
+            python_exe_conda = f"{conda_exe} run -n {env_name} python"
+            
+            package_name = _extract_package_name(repo_root)
+            if package_name:
+                logger.info(f"Attempting PyPI installation: {package_name}")
+                _run([conda_exe, "run", "-n", env_name, "pip", "install", package_name], cwd=repo_root, timeout=600)
+            
             if deps.get("pyproject") and pyproject_path:
-                code, out, err = _run([conda_exe, "run", "-n", env_name, "pip", "install", "-e", os.path.dirname(pyproject_path)])
-                if code == 0:
-                    env_info["files"]["pyproject_toml"] = pyproject_path
+                logger.info(f"Installing from local pyproject.toml")
+                _run([conda_exe, "run", "-n", env_name, "pip", "install", "-e", os.path.dirname(pyproject_path)], cwd=repo_root, timeout=1800)
+            
             if deps.get("has_requirements_txt"):
                 req_txt = os.path.join(repo_root, "requirements.txt")
                 source_req_txt = os.path.join(repo_root, "source", "requirements.txt")
@@ -440,7 +451,9 @@ def _create_conda_env(env_name: str, repo_root: str, deps: Dict[str, Any]) -> Di
                 elif os.path.exists(source_req_txt):
                     req_txt_path = source_req_txt
                 if req_txt_path:
-                    _run([conda_exe, "run", "-n", env_name, "pip", "install", "-r", req_txt_path])
+                    logger.info(f"Installing from requirements.txt")
+                    _run([conda_exe, "run", "-n", env_name, "pip", "install", "-r", req_txt_path], cwd=repo_root, timeout=1800)
+            
             yml_paths = [os.path.join(repo_root, "environment.yml"), os.path.join(repo_root, "source", "environment.yml")]
             python_cmd = [conda_exe, "run", "-n", env_name, "python"]
             _install_pip_from_env_yml(python_cmd, yml_paths, repo_root)
@@ -497,21 +510,10 @@ def _create_venv_env(repo_root: str, repo_name: str, deps: Dict[str, Any]) -> Di
         logger.info(f"Upgrading pip: {env_name}")
         _run([venv_py, "-m", "pip", "install", "-U", "pip"], cwd=repo_root)
         
-        installed_deps = False
-        if deps.get("pyproject") and pyproject_path:
-            logger.info(f"Installing pyproject.toml dependencies in venv environment: {env_name}")
-            code, out, err = _run([venv_py, "-m", "pip", "install", f"-e {os.path.dirname(pyproject_path)}"], cwd=repo_root)
-            if code == 0:
-                env_info["files"]["pyproject_toml"] = pyproject_path
-                installed_deps = True
-
-        if deps.get("has_requirements_txt"):
-            req_txt_path = next((p for p in [os.path.join(repo_root, "requirements.txt"), os.path.join(repo_root, "source", "requirements.txt")] if os.path.exists(p)), None)
-            if req_txt_path:
-                code, out, err = _run([venv_py, "-m", "pip", "install", "-r", req_txt_path])
-                if code == 0:
-                    env_info["files"]["requirements_txt"] = req_txt_path
-                    installed_deps = True
+        logger.info("Installing base packages")
+        _run([venv_py, "-m", "pip", "install"] + BASE_PACKAGES, cwd=repo_root, timeout=1800)
+        
+        _install_deps_with_priority(venv_py, repo_root, deps, repo_name)
 
         yml_paths = [os.path.join(repo_root, "environment.yml"), os.path.join(repo_root, "source", "environment.yml")]
         _install_pip_from_env_yml([venv_py], yml_paths, repo_root)
@@ -523,10 +525,210 @@ def _create_venv_env(repo_root: str, repo_name: str, deps: Dict[str, Any]) -> Di
     return None
 
 def _venv_python_path(env_path: str) -> str:
-    """Get Python path in venv environment"""
     if os.name == "nt":
         return os.path.join(env_path, "Scripts", "python.exe")
     return os.path.join(env_path, "bin", "python")
+
+
+def _check_uv_available() -> bool:
+    try:
+        code, out, err = _run(["uv", "--version"])
+        if code == 0:
+            logger.info(f"UV available: {out.strip()}")
+            return True
+    except Exception:
+        pass
+    logger.info("UV not available, will use conda/venv")
+    return False
+
+
+def _extract_package_name(repo_root: str) -> str:
+    pyproject_paths = [
+        os.path.join(repo_root, "pyproject.toml"),
+        os.path.join(repo_root, "source", "pyproject.toml")
+    ]
+    
+    for pyproject_path in pyproject_paths:
+        if not os.path.exists(pyproject_path):
+            continue
+        try:
+            import tomli
+            with open(pyproject_path, "rb") as f:
+                data = tomli.load(f)
+            name = data.get("project", {}).get("name")
+            if name:
+                return name
+        except:
+            try:
+                with open(pyproject_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        if "name" in line.lower() and "=" in line:
+                            match = re.search(r'["\']([^"\']+)["\']', line)
+                            if match:
+                                return match.group(1)
+            except:
+                pass
+    return ""
+
+
+def _install_deps_with_priority(python_exe: str, repo_root: str, deps: Dict[str, Any], repo_name: str):
+    logger.info("Installing dependencies with priority: PyPI > Git > Local")
+    
+    package_name = _extract_package_name(repo_root)
+    
+    if package_name:
+        logger.info(f"Attempting PyPI installation: {package_name}")
+        code, out, err = _run([python_exe, "-m", "pip", "install", package_name], cwd=repo_root, timeout=600)
+        if code == 0 and "Successfully installed" in out:
+            logger.info(f"Installed from PyPI: {package_name}")
+            return True
+    
+    if deps.get("pyproject"):
+        pyproject_paths = [
+            os.path.join(repo_root, "pyproject.toml"),
+            os.path.join(repo_root, "source", "pyproject.toml")
+        ]
+        for pyproject_path in pyproject_paths:
+            if os.path.exists(pyproject_path):
+                logger.info(f"Installing from local pyproject.toml")
+                code, out, err = _run([python_exe, "-m", "pip", "install", "-e", os.path.dirname(pyproject_path)], cwd=repo_root, timeout=1800)
+                if code == 0:
+                    return True
+    
+    if deps.get("has_requirements_txt"):
+        req_paths = [
+            os.path.join(repo_root, "requirements.txt"),
+            os.path.join(repo_root, "source", "requirements.txt")
+        ]
+        for req_path in req_paths:
+            if os.path.exists(req_path):
+                logger.info(f"Installing from requirements.txt")
+                code, out, err = _run([python_exe, "-m", "pip", "install", "-r", req_path], cwd=repo_root, timeout=1800)
+                if code == 0:
+                    return True
+    
+    return False
+
+
+def _create_test_infrastructure(repo_root: str, repo_name: str):
+    conftest_content = f'''import sys
+from pathlib import Path
+import matplotlib
+import matplotlib.pyplot as plt
+import pytest
+
+def pytest_configure(config):
+    project_root = Path(__file__).parent.resolve()
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+
+@pytest.fixture(autouse=True)
+def no_plot_show(monkeypatch):
+    matplotlib.use("Agg")
+    monkeypatch.setattr(plt, "show", lambda: None)
+'''
+    
+    pytest_ini_content = f'''[tool:pytest]
+testpaths = tests
+python_files = *_test.py test_*.py
+python_classes = Test*
+python_functions = test_*
+addopts =
+    -v
+    --tb=short
+    --strict-markers
+    --disable-warnings
+markers =
+    slow: marks tests as slow (deselect with '-m "not slow"')
+    integration: marks tests as integration tests
+    unit: marks tests as unit tests
+filterwarnings =
+    ignore::DeprecationWarning
+    ignore::PendingDeprecationWarning
+'''
+    
+    try:
+        conftest_path = os.path.join(repo_root, "conftest.py")
+        if not os.path.exists(conftest_path):
+            with open(conftest_path, "w", encoding="utf-8") as f:
+                f.write(conftest_content)
+            logger.info(f"Created conftest.py")
+        
+        pytest_ini_path = os.path.join(repo_root, "pytest.ini")
+        if not os.path.exists(pytest_ini_path):
+            with open(pytest_ini_path, "w", encoding="utf-8") as f:
+                f.write(pytest_ini_content)
+            logger.info(f"Created pytest.ini")
+    except Exception as e:
+        logger.warning(f"Failed to create test infrastructure: {e}")
+
+
+def _create_uv_env(repo_root: str, repo_name: str, deps: Dict[str, Any]) -> Dict[str, Any]:
+    env_name = f"{repo_name}-env"
+    env_path = os.path.join(repo_root, env_name)
+    
+    source_dir = os.path.join(repo_root, "source")
+    doc_hints = _scan_docs_for_python_version(source_dir) if os.path.isdir(source_dir) else {}
+    
+    preferred_versions = []
+    pyproject_path = None
+    pyproject_root = os.path.join(repo_root, "pyproject.toml")
+    source_pyproject = os.path.join(repo_root, "source", "pyproject.toml")
+    if os.path.exists(pyproject_root):
+        pyproject_path = pyproject_root
+    elif os.path.exists(source_pyproject):
+        pyproject_path = source_pyproject
+    
+    if pyproject_path:
+        pyproject_version = _extract_requires_python(pyproject_path)
+        if pyproject_version != MIN_PYTHON_VERSION:
+            preferred_versions.append(pyproject_version)
+    
+    if doc_hints.get("explicit_version"):
+        preferred_versions.append(doc_hints["explicit_version"])
+    if doc_hints.get("readme_version"):
+        preferred_versions.append(doc_hints["readme_version"])
+    
+    preferred_versions.extend(FALLBACK_PYTHON_VERSIONS)
+    preferred_versions = list(dict.fromkeys(preferred_versions))
+    
+    env_info = None
+    for py_ver in preferred_versions:
+        logger.info(f"Creating UV environment with Python {py_ver}")
+        code, out, err = _run(["uv", "venv", "--python", py_ver, env_path], cwd=repo_root)
+        if code == 0:
+            env_info = {
+                "type": "uv",
+                "name": env_name,
+                "path": env_path,
+                "files": {},
+                "python": py_ver,
+                "exec_prefix": []
+            }
+            logger.info(f"UV environment created with Python {py_ver}")
+            break
+    
+    if not env_info:
+        logger.warning("Failed to create UV environment with any Python version")
+        return None
+    
+    venv_py = _venv_python_path(env_path)
+    if not os.path.isfile(venv_py):
+        logger.warning(f"UV Python executable not found: {venv_py}")
+        return None
+    
+    env_info["exec_prefix"] = [venv_py]
+    
+    logger.info("Installing base packages")
+    _run([venv_py, "-m", "pip", "install"] + BASE_PACKAGES, cwd=repo_root, timeout=1800)
+    
+    _install_deps_with_priority(venv_py, repo_root, deps, repo_name)
+    
+    yml_paths = [os.path.join(repo_root, "environment.yml"), os.path.join(repo_root, "source", "environment.yml")]
+    _install_pip_from_env_yml([venv_py], yml_paths, repo_root)
+    
+    logger.info(f"UV environment created successfully: {env_name}")
+    return env_info
 
 def env_node(state: Dict[str, Any]) -> Dict[str, Any]:
     repo = state.get("repository", {})
@@ -546,19 +748,23 @@ def env_node(state: Dict[str, Any]) -> Dict[str, Any]:
     deps = (state.get("analysis") or {}).get("dependencies", {})
     
     env = None
-    if _check_conda_available():
+    
+    if _check_uv_available():
+        logger.info("UV detected, using UV for environment creation")
+        env = _create_uv_env(repo_root, repo_name, deps)
+        if env:
+            logger.info(f"Successfully created UV environment: {env['name']}")
+    
+    if not env and _check_conda_available():
+        logger.info("Attempting conda environment creation")
         _cleanup_old_envs(repo_name)
-        
-
         env_name = _env_name(repo_name)
         env = _create_conda_env(env_name, repo_root, deps)
-        
         if env:
             logger.info(f"Successfully created conda environment: {env_name}")
-        else:
-            logger.warning("Failed to create conda environment, falling back to venv")
     
     if not env:
+        logger.info("Falling back to venv environment creation")
         env = _create_venv_env(repo_root, repo_name, deps)
     
     if not env:
@@ -569,6 +775,8 @@ def env_node(state: Dict[str, Any]) -> Dict[str, Any]:
             "action_taken": "continue"
         })
         env = {"type": "none", "name": "none", "files": {}, "python": "3.10", "exec_prefix": []}
+    
+    _create_test_infrastructure(repo_root, repo_name)
 
     cpp_info = (state.get("analysis") or {}).get("cpp_info", {})
     if cpp_info.get("has_cpp_files"):
