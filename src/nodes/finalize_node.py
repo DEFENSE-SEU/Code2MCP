@@ -4,6 +4,7 @@ import os
 import json
 import time
 import re
+import subprocess
 from pathlib import Path
 from typing import Dict, Any, List
 from ..utils import setup_logging, write_file, get_llm_service
@@ -687,11 +688,16 @@ def finalize_node(state: Dict[str, Any]) -> Dict[str, Any]:
             logger.info("AUTO_DEPLOY_HF enabled, deploying to HuggingFace...")
             repo = state.get("repository", {})
             repo_root = repo.get("local_paths", {}).get("repo_root")
+            repo_name = repo.get("name")
             if repo_root:
                 result = deploy_to_huggingface(repo_root)
                 if result.get("success"):
                     logger.info(f"HuggingFace deployment successful: {result.get('url')}")
                     state["huggingface_deployment"] = result
+                    
+                    auto_connect = os.getenv("AUTO_CONNECT_CLIENT", "").lower()
+                    if auto_connect in ["cursor", "claude"]:
+                        _connect_mcp_client(auto_connect, repo_name, result.get("url"))
                 else:
                     logger.warning(f"HuggingFace deployment failed: {result.get('error')}")
     
@@ -722,6 +728,29 @@ Please return the suggestion list directly, separated by commas"""
         pass
     
     return ["Workflow execution smooth, recommend further functional testing"]
+
+def _connect_mcp_client(client_type: str, mcp_name: str, mcp_url: str):
+    try:
+        tools_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "tools")
+        connect_script = os.path.join(tools_dir, "connect_mcp.py")
+        
+        cmd = [
+            "python",
+            connect_script,
+            "--client", client_type,
+            "--name", mcp_name,
+            "--url", mcp_url
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        
+        if result.returncode == 0:
+            logger.info(f"Auto-connected {mcp_name} to {client_type}")
+        else:
+            logger.warning(f"Auto-connect to {client_type} failed (may need manual configuration)")
+    except Exception as e:
+        logger.warning(f"Auto-connect to {client_type} failed: {e}")
+
 
 def _save_final_reports(state: Dict[str, Any], summary: Dict[str, Any], technical_report: str):
     repo = state.get("repository", {})
