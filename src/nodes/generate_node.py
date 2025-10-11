@@ -36,10 +36,6 @@ mcp_plugin_dir = os.path.join(project_root, "mcp_plugin")
 if mcp_plugin_dir not in sys.path:
     sys.path.insert(0, mcp_plugin_dir)
 
-# Set path to source directory
-source_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "source")
-sys.path.insert(0, source_path)
-
 from mcp_service import create_app
 
 def main():
@@ -177,18 +173,22 @@ Project type: {project_type} project
 
 Requirements:
 1. Generate a complete MCP (Model Context Protocol) service file using fastmcp library
-2. Add path settings at the beginning of the file: import os, import sys, source_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "source"), sys.path.insert(0, source_path)
-3. Include necessary import statements: from fastmcp import FastMCP
-4. Use FastMCP class to create the service application: mcp = FastMCP("service_name")
-5. Generate rich tool endpoints for each core module, using @mcp.tool decorator, including name and description parameters
-6. Focus on core functionality endpoints only
-7. Must include create_app() function, which returns FastMCP instance
-8. Tool functions must return a standard dictionary, containing success/result/error fields, do not add description or other extra fields
-9. Do not use *args or **kwargs in any @mcp.tool function; all parameters must be explicit and typed
+2. Include necessary import statements: from fastmcp import FastMCP
+3. Use FastMCP class to create the service application: mcp = FastMCP("service_name")
+4. Generate rich tool endpoints for each core module, using @mcp.tool decorator, including name and description parameters
+5. Focus on core functionality endpoints only
+6. Must include create_app() function, which returns FastMCP instance
+7. Tool functions must return a standard dictionary, containing success/result/error fields, do not add description or other extra fields
+8. Do not use *args or **kwargs in any @mcp.tool function; all parameters must be explicit and typed
 
-Important import requirements:
-- Since sys.path is already pointing to the source directory, import statements should remove the "source." prefix from the package field
-- Use the package field in the analysis result directly, but remove the "source." prefix at the beginning"""
+CRITICAL Import Requirements:
+- The repository will be installed as an editable package via 'pip install -e ./source'
+- Use the package name from pyproject.toml for imports (e.g., if name="textblob", use "from textblob import TextBlob")
+- NEVER use "from src.*" or "from source.*" in imports
+- Remove any "source." or "src." prefix from package names in the analysis result
+- Import from the installed package name directly
+- Example: If pyproject.toml has name="textblob", use "from textblob import TextBlob", NOT "from src.textblob.base import BaseBlob"
+- All imports should work with the editable package installation"""
 
         if retry_info:
             error_analysis = retry_info.get('error_analysis', {})
@@ -344,7 +344,9 @@ def {func}(*args, **kwargs):
         
             if package:
                 if package.startswith("source."):
-                    package = package[7:]  
+                    package = package[7:]
+                if package.startswith("src."):
+                    package = package[4:]  
                 
                 if module_name and module_name != package and not package.endswith(module_name):
                     import_path = f"{package}.{module_name}"
