@@ -636,20 +636,7 @@ filterwarnings =
     ignore::PendingDeprecationWarning
 '''
     
-    try:
-        conftest_path = os.path.join(repo_root, "conftest.py")
-        if not os.path.exists(conftest_path):
-            with open(conftest_path, "w", encoding="utf-8") as f:
-                f.write(conftest_content)
-            logger.info(f"Created conftest.py")
-        
-        pytest_ini_path = os.path.join(repo_root, "pytest.ini")
-        if not os.path.exists(pytest_ini_path):
-            with open(pytest_ini_path, "w", encoding="utf-8") as f:
-                f.write(pytest_ini_content)
-            logger.info(f"Created pytest.ini")
-    except Exception as e:
-        logger.warning(f"Failed to create test infrastructure: {e}")
+    return
 
 
 def _create_uv_env(repo_root: str, repo_name: str, deps: Dict[str, Any]) -> Dict[str, Any]:
@@ -812,113 +799,8 @@ def env_node(state: Dict[str, Any]) -> Dict[str, Any]:
             logger.warning("Pytest failed, falling back to simple import validation")
 
     if not tests["passed"]:
-        mcp_output_dir = os.path.join(repo_root, "mcp_output")
-        os.makedirs(mcp_output_dir, exist_ok=True)
-        
-        smoke_dir = os.path.join(mcp_output_dir, "tests_smoke")
-        ensure_directory(smoke_dir)
-        smoke_py = os.path.join(smoke_dir, "test_smoke.py")
-        try:
-            pkgs = (state.get("analysis") or {}).get("structure", {}).get("packages", [])
-            
-            pkgs = [pkg for pkg in pkgs if "tests" not in pkg.lower()]
-            
-            target_pkg = None
-            if pkgs:
-                target_pkg = min(pkgs, key=lambda p: p.count("."))
-                if target_pkg.startswith("source."):
-                    parts = target_pkg.split(".")
-                    if len(parts) >= 3:  
-                        target_pkg = ".".join(parts[1:])  
-                    elif len(parts) == 2:  
-                        target_pkg = parts[1]  
-            
-            content = """import importlib, sys
-import os
-
-# Add current directory to Python path
-sys.path.insert(0, os.getcwd())
-
-source_dir = os.path.join(os.getcwd(), "source")
-if os.path.exists(source_dir):
-    sys.path.insert(0, source_dir)
-
-"""
-            
-            if target_pkg:
-                content += f"""
-try:
-    importlib.import_module("{target_pkg}")
-    print("OK - Successfully imported {target_pkg}")
-except ImportError as e:
-    print(f"Failed to import {target_pkg}: {{e}}")
-    fallback_packages = []
-"""
-                
-                fallback_packages = []
-                
-                if target_pkg.startswith("source."):
-                    parts = target_pkg.split(".")
-                    if len(parts) >= 3:  
-                        fallback_packages.append(".".join(parts[1:])) 
-                        fallback_packages.append(parts[-1])  
-                    elif len(parts) == 2:  
-                        fallback_packages.append(parts[1]) 
-                elif target_pkg.startswith("src."):
-                    fallback_packages.append(target_pkg.replace("src.", ""))
-                elif "." in target_pkg:
-                    fallback_packages.append(target_pkg.split(".")[-1])
-                
-                fallback_packages.append(target_pkg)
-                fallback_packages = list(dict.fromkeys([pkg for pkg in fallback_packages if pkg]))
-                
-                content += f"""
-    fallback_packages = {fallback_packages}
-"""
-                
-                content += """
-    for pkg in fallback_packages:
-        try:
-            importlib.import_module(pkg)
-            print(f"OK - Successfully imported {pkg}")
-            break
-        except ImportError:
-            continue
-    else:
-        print("All import attempts failed")
-"""
-            else:
-                content += """
-print("NO_PACKAGE - No testable package found")
-"""
-            
-            with open(smoke_py, "w", encoding="utf-8") as f:
-                f.write(content)
-            
-            if env["type"] == "conda":
-                conda_exe = os.environ.get("CONDA_EXE")
-                if not conda_exe or not os.path.exists(conda_exe):
-                    if _check_conda_available():
-                        conda_exe = os.environ.get("CONDA_EXE")
-                if not conda_exe or not os.path.exists(conda_exe):
-                    logger.error("Conda executable not found, skipping smoke test")
-                    tests["passed"] = False
-                else:
-                    cmd = [conda_exe, "run", "-n", env["name"], "python", smoke_py]
-            elif env["type"] == "venv" and env["exec_prefix"]:
-                cmd = [env["exec_prefix"][0], smoke_py]
-            else:
-                cmd = ["python", smoke_py]
-            
-            code, out, err = _run(cmd, cwd=repo_root)
-            tests["passed"] = (code == 0 and "OK" in out)
-            if tests["passed"]:
-                logger.info("Smoke test passed")
-            else:
-                logger.warning(f"Smoke test failed: {err or out}")
-                
-        except Exception as e:
-            logger.warning(f"Failed to generate/execute smoke test: {e}")
+        # 跳过生成任何 tests_smoke 文件/目录
+        pass
 
     mcp_output_dir = os.path.join(repo_root, "mcp_output")
     os.makedirs(mcp_output_dir, exist_ok=True)
