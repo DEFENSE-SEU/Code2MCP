@@ -60,7 +60,68 @@ def deploy_to_huggingface(workspace_dir, hf_username=None, hf_token=None):
         if source_dir.exists():
             if (repo_deploy_dir / "source").exists():
                 shutil.rmtree(repo_deploy_dir / "source")
-            shutil.copytree(source_dir, repo_deploy_dir / "source")
+            try:
+                shutil.copytree(
+                    source_dir,
+                    repo_deploy_dir / "source",
+                    ignore=shutil.ignore_patterns('.git', '.git*', '__pycache__')
+                )
+            except Exception:
+                # Continue even if copying source fails (e.g., Windows permission issues)
+                pass
+        
+        def _collect_requirements() -> str:
+            reqs = []
+            def add_line(line: str):
+                s = (line or "").strip()
+                if not s or s.startswith('#'):
+                    return
+                if s.lower().startswith('python'):
+                    return
+                if s not in reqs:
+                    reqs.append(s)
+            # Base runtime
+            add_line("fastmcp")
+            add_line("fastapi")
+            add_line("uvicorn[standard]")
+
+            # Merge from generated MCP requirements
+            mcp_req = mcp_output / "requirements.txt"
+            if mcp_req.exists():
+                with open(mcp_req, "r", encoding="utf-8") as f:
+                    for line in f:
+                        add_line(line)
+
+            # Merge from source requirements.txt if present
+            src_req = source_dir / "requirements.txt"
+            if src_req.exists():
+                with open(src_req, "r", encoding="utf-8") as f:
+                    for line in f:
+                        add_line(line)
+
+            # Always try to parse pyproject.toml for [project].dependencies
+            pyproject = source_dir / "pyproject.toml"
+            if pyproject.exists():
+                try:
+                    try:
+                        import tomllib as _toml  # py311+
+                    except Exception:  # pragma: no cover
+                        import tomli as _toml  # type: ignore
+                    with open(pyproject, "rb") as fp:
+                        data = _toml.load(fp)
+                    for item in (data.get("project", {}).get("dependencies", []) or []):
+                        add_line(item)
+                except Exception:
+                    # Fallback to regex if toml parsing unavailable
+                    text = pyproject.read_text(encoding="utf-8", errors="ignore")
+                    import re
+                    m = re.search(r"\[project\][\s\S]*?dependencies\s*=\s*\[(.*?)\]", text, re.IGNORECASE | re.DOTALL)
+                    if m:
+                        body = m.group(1)
+                        for item in re.findall(r"\"([^\"]+)\"", body):
+                            add_line(item)
+
+            return "\n".join(reqs) + "\n"
         
         dockerfile_content = f'''FROM python:3.10
 
@@ -84,7 +145,7 @@ EXPOSE 7860
 CMD ["python", "{repo_name}/mcp_output/start_mcp.py"]
 '''
         
-        with open(deploy_dir / "Dockerfile", "w") as f:
+        with open(deploy_dir / "Dockerfile", "w", encoding="utf-8") as f:
             f.write(dockerfile_content)
         
         app_content = f'''from fastapi import FastAPI
@@ -136,7 +197,7 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=port)
 '''
         
-        with open(deploy_dir / "app.py", "w") as f:
+        with open(deploy_dir / "app.py", "w", encoding="utf-8") as f:
             f.write(app_content)
         
         readme_content = f'''---
@@ -173,20 +234,24 @@ https://{hf_username}-{repo_name}-mcp.hf.space/mcp
 ```
 '''
         
-        with open(deploy_dir / "README.md", "w") as f:
+        with open(deploy_dir / "README.md", "w", encoding="utf-8") as f:
             f.write(readme_content)
+        
+        merged_requirements = _collect_requirements()
+        with open(deploy_dir / "requirements.txt", "w", encoding="utf-8") as f:
+            f.write(merged_requirements)
         
         requirements_path = mcp_output / "requirements.txt"
         if requirements_path.exists():
-            with open(requirements_path, "r") as f:
+            with open(requirements_path, "r", encoding="utf-8") as f:
                 requirements = f.read()
             if "fastapi" not in requirements.lower():
                 requirements += "\nfastapi\nuvicorn[standard]\n"
-            with open(deploy_dir / "requirements.txt", "w") as f:
-                f.write(requirements)
+            with open(deploy_dir / "requirements.txt", "w", encoding="utf-8") as f:
+                f.write(merged_requirements)
         else:
-            with open(deploy_dir / "requirements.txt", "w") as f:
-                f.write("fastmcp\nfastapi\nuvicorn[standard]\n")
+            with open(deploy_dir / "requirements.txt", "w", encoding="utf-8") as f:
+                f.write(merged_requirements)
         
         gitattributes_content = '''*.7z filter=lfs diff=lfs merge=lfs -text
 *.arrow filter=lfs diff=lfs merge=lfs -text
@@ -205,7 +270,7 @@ https://{hf_username}-{repo_name}-mcp.hf.space/mcp
 *.zip filter=lfs diff=lfs merge=lfs -text
 '''
         
-        with open(deploy_dir / ".gitattributes", "w") as f:
+        with open(deploy_dir / ".gitattributes", "w", encoding="utf-8") as f:
             f.write(gitattributes_content)
         
         gitignore_content = '''__pycache__/
@@ -219,7 +284,7 @@ venv/
 .git
 '''
         
-        with open(deploy_dir / ".gitignore", "w") as f:
+        with open(deploy_dir / ".gitignore", "w", encoding="utf-8") as f:
             f.write(gitignore_content)
         
         subprocess.run(
