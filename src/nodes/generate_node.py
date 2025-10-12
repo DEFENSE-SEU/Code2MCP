@@ -837,9 +837,9 @@ class Adapter:
                     result = subprocess.run(script, capture_output=True, text=True, timeout=10)
                     if result.returncode == 0:
                         return {"result": f"Script {script} executed successfully", "status": "success"}
-                        except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError) as script_error:
-            print(f"Script execution failed {script}: {script_error}")
-            continue
+                except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError) as script_error:
+                    print(f"Script execution failed {script}: {script_error}")
+                    continue
             
             return {"result": "no_executable_script_found", "status": "warning"}
         except Exception as e:
@@ -1170,9 +1170,6 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 mcp_plugin_dir = os.path.join(project_root, "mcp_plugin")
 if mcp_plugin_dir not in sys.path:
     sys.path.insert(0, mcp_plugin_dir)
-
-source_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "source")
-sys.path.insert(0, source_path)
 
 def test_import_mcp_service():
     """Test if MCP service can be imported normally"""

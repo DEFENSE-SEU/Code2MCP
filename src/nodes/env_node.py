@@ -426,21 +426,17 @@ def _create_conda_env(env_name: str, repo_root: str, deps: Dict[str, Any]) -> Di
     
     if created:
         env_info["python"] = selected_py
-        
-        logger.info("Installing base packages in conda environment")
         _run([conda_exe, "run", "-n", env_name, "pip", "install"] + BASE_PACKAGES, cwd=repo_root, timeout=1800)
         
         if not deps.get("has_environment_yml"):
             python_exe_conda = f"{conda_exe} run -n {env_name} python"
             
-            package_name = _extract_package_name(repo_root)
-            if package_name:
-                logger.info(f"Attempting PyPI installation: {package_name}")
-                _run([conda_exe, "run", "-n", env_name, "pip", "install", package_name], cwd=repo_root, timeout=600)
-            
             if deps.get("pyproject") and pyproject_path:
-                logger.info(f"Installing from local pyproject.toml")
                 _run([conda_exe, "run", "-n", env_name, "pip", "install", "-e", os.path.dirname(pyproject_path)], cwd=repo_root, timeout=1800)
+            else:
+                package_name = _extract_package_name(repo_root)
+                if package_name:
+                    _run([conda_exe, "run", "-n", env_name, "pip", "install", package_name], cwd=repo_root, timeout=600)
             
             if deps.get("has_requirements_txt"):
                 req_txt = os.path.join(repo_root, "requirements.txt")
@@ -510,7 +506,6 @@ def _create_venv_env(repo_root: str, repo_name: str, deps: Dict[str, Any]) -> Di
         logger.info(f"Upgrading pip: {env_name}")
         _run([venv_py, "-m", "pip", "install", "-U", "pip"], cwd=repo_root)
         
-        logger.info("Installing base packages")
         _run([venv_py, "-m", "pip", "install"] + BASE_PACKAGES, cwd=repo_root, timeout=1800)
         
         _install_deps_with_priority(venv_py, repo_root, deps, repo_name)
@@ -572,17 +567,6 @@ def _extract_package_name(repo_root: str) -> str:
 
 
 def _install_deps_with_priority(python_exe: str, repo_root: str, deps: Dict[str, Any], repo_name: str):
-    logger.info("Installing dependencies with priority: PyPI > Git > Local")
-    
-    package_name = _extract_package_name(repo_root)
-    
-    if package_name:
-        logger.info(f"Attempting PyPI installation: {package_name}")
-        code, out, err = _run([python_exe, "-m", "pip", "install", package_name], cwd=repo_root, timeout=600)
-        if code == 0 and "Successfully installed" in out:
-            logger.info(f"Installed from PyPI: {package_name}")
-            return True
-    
     if deps.get("pyproject"):
         pyproject_paths = [
             os.path.join(repo_root, "pyproject.toml"),
@@ -590,10 +574,15 @@ def _install_deps_with_priority(python_exe: str, repo_root: str, deps: Dict[str,
         ]
         for pyproject_path in pyproject_paths:
             if os.path.exists(pyproject_path):
-                logger.info(f"Installing from local pyproject.toml")
                 code, out, err = _run([python_exe, "-m", "pip", "install", "-e", os.path.dirname(pyproject_path)], cwd=repo_root, timeout=1800)
                 if code == 0:
                     return True
+    
+    package_name = _extract_package_name(repo_root)
+    if package_name:
+        code, out, err = _run([python_exe, "-m", "pip", "install", package_name], cwd=repo_root, timeout=600)
+        if code == 0 and "Successfully installed" in out:
+            return True
     
     if deps.get("has_requirements_txt"):
         req_paths = [
@@ -694,7 +683,6 @@ def _create_uv_env(repo_root: str, repo_name: str, deps: Dict[str, Any]) -> Dict
     
     env_info = None
     for py_ver in preferred_versions:
-        logger.info(f"Creating UV environment with Python {py_ver}")
         code, out, err = _run(["uv", "venv", "--python", py_ver, env_path], cwd=repo_root)
         if code == 0:
             env_info = {
@@ -719,7 +707,6 @@ def _create_uv_env(repo_root: str, repo_name: str, deps: Dict[str, Any]) -> Dict
     
     env_info["exec_prefix"] = [venv_py]
     
-    logger.info("Installing base packages")
     _run([venv_py, "-m", "pip", "install"] + BASE_PACKAGES, cwd=repo_root, timeout=1800)
     
     _install_deps_with_priority(venv_py, repo_root, deps, repo_name)

@@ -87,6 +87,10 @@ def run_node(state: Dict[str, Any]) -> Dict[str, Any]:
     if code != 0:
         _run(base_cmd + ["-m", "pip", "install", "-U", "pip"], cwd=repo_root)
         _run(base_cmd + ["-m", "pip", "install", "fastmcp>=0.1.0"], cwd=repo_root)
+    
+    smoke_dir = os.path.join(repo_root, "mcp_output", "tests_smoke")
+    os.makedirs(smoke_dir, exist_ok=True)
+    
     cpp = (state.get("analysis") or {}).get("cpp_info", {})
     if cpp.get("has_cpp_files"):
         pkg = cpp.get("main_package") or ""
@@ -95,8 +99,6 @@ def run_node(state: Dict[str, Any]) -> Dict[str, Any]:
         if os.path.isdir(p1):
             paths.append(p1)
         paths.append(os.path.join(repo_root, "source"))
-        smoke_dir = os.path.join(repo_root, "mcp_output", "tests_smoke")
-        os.makedirs(smoke_dir, exist_ok=True)
         script = os.path.join(smoke_dir, "test_cpp_import.py")
         lines = ["import sys,os"]
         for p in paths:
@@ -128,24 +130,20 @@ def run_node(state: Dict[str, Any]) -> Dict[str, Any]:
         
             if code == 0:
                 logger.info("MCP service test passed")
+                passed = True
             else:
                 logger.warning(f"MCP service basic test failed: {err}")
                 logger.warning(f"Command output: {out}")
                 logger.warning(f"Error details: {err}")
-
-    if env_info.get("type") == "conda":
-        rel_mcp_py = os.path.relpath(mcp_py, repo_root)
-        logger.info(f"Testing start_mcp.py in conda environment: {rel_mcp_py}")
-        code, out, err = _run(base_cmd + [rel_mcp_py, "--help"], cwd=repo_root)
-        if code != 0:
-            code, out, err = _run(base_cmd + [rel_mcp_py], cwd=repo_root, timeout=300)
+                passed = False
+        else:
+            logger.warning("test_mcp_basic.py not found, skipping tests")
+            passed = False
     else:
-        code, out, err = _run(base_cmd + [mcp_py, "--help"], cwd=repo_root)
-        if code != 0:
-            code, out, err = _run(base_cmd + [mcp_py], cwd=repo_root, timeout=300)
-
-    passed = (code == 0)
-    plugin_test_result = {"passed": passed, "report_path": None, "stdout": out[-1000:], "stderr": err[-1000:]}
+        logger.warning("tests_mcp directory not found, skipping tests")
+        passed = False
+    
+    plugin_test_result = {"passed": passed, "report_path": None, "stdout": out[-1000:] if 'out' in locals() else "", "stderr": err[-1000:] if 'err' in locals() else ""}
     state.setdefault("tests", {})["plugin"] = plugin_test_result
 
     run_result = {
