@@ -10,10 +10,6 @@ mcp_plugin_dir = os.path.join(project_root, "mcp_plugin")
 if mcp_plugin_dir not in sys.path:
     sys.path.insert(0, mcp_plugin_dir)
 
-# Set path to source directory
-source_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "source")
-sys.path.insert(0, source_path)
-
 from mcp_service import create_app
 
 def main():

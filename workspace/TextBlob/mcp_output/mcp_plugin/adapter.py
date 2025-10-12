@@ -5,240 +5,205 @@ import sys
 source_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "source")
 sys.path.insert(0, source_path)
 
-# Import statements
+# Importing necessary modules and classes
 try:
-    from src.textblob import TextBlob, Blobber, Word, WordList, Sentence
+    from src.textblob.blob import TextBlob
+    from src.textblob.wordnet import Word
+    from src.textblob.classifiers import NaiveBayesClassifier
     from src.textblob.tokenizers import WordTokenizer, SentenceTokenizer
-    from src.textblob.taggers import NLTKTagger, PatternTagger
-    from src.textblob.np_extractors import FastNPExtractor, ConllExtractor
     from src.textblob.sentiments import PatternAnalyzer, NaiveBayesAnalyzer
     from src.textblob.parsers import PatternParser
-    from src.textblob.classifiers import NaiveBayesClassifier, DecisionTreeClassifier, MaxEntClassifier
+    from src.textblob.np_extractors import FastNPExtractor
+    from src.textblob.decorators import cached_property
+    from src.textblob.utils import strip_punc
+    from src.textblob.exceptions import TextBlobException
+    from src.textblob.download_corpora import download_all
+    mode = "import"
 except ImportError as e:
-    print("Error importing modules: ", str(e))
-    print("Fallback mode activated. Ensure the source directory is correctly set.")
-    fallback_mode = True
-else:
-    fallback_mode = False
+    mode = "fallback"
+    print(f"Warning: Failed to import TextBlob modules. Fallback mode activated. Error: {e}")
 
 # Adapter class
 class Adapter:
     """
-    Adapter class for MCP plugin integration with TextBlob library.
-    Provides methods to utilize TextBlob's core classes and functions.
+    Adapter class for the MCP plugin, providing an interface to the TextBlob library.
+    This class handles NLP tasks such as tokenization, sentiment analysis, classification, and more.
     """
+
     def __init__(self):
-        self.mode = "import" if not fallback_mode else "fallback"
-
-    # -------------------- Core Class Methods --------------------
-
-    def create_textblob(self, text):
         """
-        Create an instance of TextBlob.
-        
+        Initialize the Adapter class.
+        Sets the mode attribute to indicate the import strategy.
+        """
+        self.mode = mode
+
+    # -------------------------------------------------------------------------
+    # TextBlob Class Methods
+    # -------------------------------------------------------------------------
+
+    def create_textblob_instance(self, text):
+        """
+        Create an instance of the TextBlob class.
+
         Parameters:
             text (str): The text to process.
-        
+
         Returns:
-            dict: Status and TextBlob instance or error message.
+            dict: A dictionary containing the status and the TextBlob instance or error message.
         """
         try:
             blob = TextBlob(text)
             return {"status": "success", "data": blob}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to create TextBlob instance: {str(e)}"}
+            return {"status": "error", "message": f"Failed to create TextBlob instance: {e}"}
 
-    def create_blobber(self, tokenizer=None, np_extractor=None):
-        """
-        Create an instance of Blobber with optional custom components.
-        
-        Parameters:
-            tokenizer (object): Custom tokenizer instance.
-            np_extractor (object): Custom noun phrase extractor instance.
-        
-        Returns:
-            dict: Status and Blobber instance or error message.
-        """
-        try:
-            blobber = Blobber(tokenizer=tokenizer, np_extractor=np_extractor)
-            return {"status": "success", "data": blobber}
-        except Exception as e:
-            return {"status": "error", "message": f"Failed to create Blobber instance: {str(e)}"}
+    # -------------------------------------------------------------------------
+    # Tokenization Methods
+    # -------------------------------------------------------------------------
 
-    def create_word(self, word):
+    def tokenize_words(self, text):
         """
-        Create an instance of Word.
-        
-        Parameters:
-            word (str): The word to process.
-        
-        Returns:
-            dict: Status and Word instance or error message.
-        """
-        try:
-            word_instance = Word(word)
-            return {"status": "success", "data": word_instance}
-        except Exception as e:
-            return {"status": "error", "message": f"Failed to create Word instance: {str(e)}"}
+        Tokenize the given text into words.
 
-    def create_wordlist(self, words):
-        """
-        Create an instance of WordList.
-        
-        Parameters:
-            words (list): List of words to process.
-        
-        Returns:
-            dict: Status and WordList instance or error message.
-        """
-        try:
-            wordlist_instance = WordList(words)
-            return {"status": "success", "data": wordlist_instance}
-        except Exception as e:
-            return {"status": "error", "message": f"Failed to create WordList instance: {str(e)}"}
-
-    def create_sentence(self, text, start_index=0, end_index=None):
-        """
-        Create an instance of Sentence.
-        
-        Parameters:
-            text (str): The sentence text.
-            start_index (int): Start index of the sentence.
-            end_index (int): End index of the sentence.
-        
-        Returns:
-            dict: Status and Sentence instance or error message.
-        """
-        try:
-            sentence_instance = Sentence(text, start_index=start_index, end_index=end_index)
-            return {"status": "success", "data": sentence_instance}
-        except Exception as e:
-            return {"status": "error", "message": f"Failed to create Sentence instance: {str(e)}"}
-
-    # -------------------- NLP Component Methods --------------------
-
-    def tokenize_text(self, text, tokenizer_type="word"):
-        """
-        Tokenize text using the specified tokenizer type.
-        
         Parameters:
             text (str): The text to tokenize.
-            tokenizer_type (str): Type of tokenizer ("word" or "sentence").
-        
+
         Returns:
-            dict: Status and tokenized text or error message.
+            dict: A dictionary containing the status and the list of words or error message.
         """
         try:
-            tokenizer = WordTokenizer() if tokenizer_type == "word" else SentenceTokenizer()
+            tokenizer = WordTokenizer()
             tokens = tokenizer.tokenize(text)
             return {"status": "success", "data": tokens}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to tokenize text: {str(e)}"}
+            return {"status": "error", "message": f"Failed to tokenize words: {e}"}
 
-    def tag_pos(self, text, tagger_type="nltk"):
+    def tokenize_sentences(self, text):
         """
-        Perform part-of-speech tagging on text using the specified tagger type.
-        
+        Tokenize the given text into sentences.
+
         Parameters:
-            text (str): The text to tag.
-            tagger_type (str): Type of tagger ("nltk" or "pattern").
-        
+            text (str): The text to tokenize.
+
         Returns:
-            dict: Status and POS tags or error message.
+            dict: A dictionary containing the status and the list of sentences or error message.
         """
         try:
-            tagger = NLTKTagger() if tagger_type == "nltk" else PatternTagger()
-            tags = tagger.tag(text)
-            return {"status": "success", "data": tags}
+            tokenizer = SentenceTokenizer()
+            tokens = tokenizer.tokenize(text)
+            return {"status": "success", "data": tokens}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to perform POS tagging: {str(e)}"}
+            return {"status": "error", "message": f"Failed to tokenize sentences: {e}"}
 
-    def extract_noun_phrases(self, text, extractor_type="fast"):
-        """
-        Extract noun phrases from text using the specified extractor type.
-        
-        Parameters:
-            text (str): The text to process.
-            extractor_type (str): Type of extractor ("fast" or "conll").
-        
-        Returns:
-            dict: Status and noun phrases or error message.
-        """
-        try:
-            extractor = FastNPExtractor() if extractor_type == "fast" else ConllExtractor()
-            noun_phrases = extractor.extract(text)
-            return {"status": "success", "data": noun_phrases}
-        except Exception as e:
-            return {"status": "error", "message": f"Failed to extract noun phrases: {str(e)}"}
+    # -------------------------------------------------------------------------
+    # Sentiment Analysis Methods
+    # -------------------------------------------------------------------------
 
     def analyze_sentiment(self, text, analyzer_type="pattern"):
         """
-        Analyze sentiment of text using the specified analyzer type.
-        
+        Analyze the sentiment of the given text.
+
         Parameters:
             text (str): The text to analyze.
-            analyzer_type (str): Type of analyzer ("pattern" or "naivebayes").
-        
+            analyzer_type (str): The type of analyzer to use ("pattern" or "naive_bayes").
+
         Returns:
-            dict: Status and sentiment analysis result or error message.
+            dict: A dictionary containing the status and the sentiment analysis result or error message.
         """
         try:
-            analyzer = PatternAnalyzer() if analyzer_type == "pattern" else NaiveBayesAnalyzer()
+            if analyzer_type == "pattern":
+                analyzer = PatternAnalyzer()
+            elif analyzer_type == "naive_bayes":
+                analyzer = NaiveBayesAnalyzer()
+            else:
+                return {"status": "error", "message": "Invalid analyzer type specified."}
+
             sentiment = analyzer.analyze(text)
             return {"status": "success", "data": sentiment}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to analyze sentiment: {str(e)}"}
+            return {"status": "error", "message": f"Failed to analyze sentiment: {e}"}
 
-    def parse_text(self, text):
+    # -------------------------------------------------------------------------
+    # Classification Methods
+    # -------------------------------------------------------------------------
+
+    def train_classifier(self, training_data):
         """
-        Parse text to generate syntax trees.
-        
+        Train a Naive Bayes classifier with the given training data.
+
         Parameters:
-            text (str): The text to parse.
-        
+            training_data (list): A list of tuples containing text and labels.
+
         Returns:
-            dict: Status and parsed result or error message.
+            dict: A dictionary containing the status and the trained classifier or error message.
         """
         try:
-            parser = PatternParser()
-            parsed_result = parser.parse(text)
-            return {"status": "success", "data": parsed_result}
+            classifier = NaiveBayesClassifier(training_data)
+            return {"status": "success", "data": classifier}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to parse text: {str(e)}"}
+            return {"status": "error", "message": f"Failed to train classifier: {e}"}
 
-    def classify_text(self, text, classifier_type="naivebayes", training_data=None):
+    def classify_text(self, classifier, text):
         """
-        Classify text using the specified classifier type.
-        
+        Classify the given text using the provided classifier.
+
         Parameters:
+            classifier (NaiveBayesClassifier): The trained classifier.
             text (str): The text to classify.
-            classifier_type (str): Type of classifier ("naivebayes", "decisiontree", "maxent").
-            training_data (list): Training data for the classifier.
-        
+
         Returns:
-            dict: Status and classification result or error message.
+            dict: A dictionary containing the status and the classification result or error message.
         """
         try:
-            if classifier_type == "naivebayes":
-                classifier = NaiveBayesClassifier(training_data)
-            elif classifier_type == "decisiontree":
-                classifier = DecisionTreeClassifier(training_data)
-            elif classifier_type == "maxent":
-                classifier = MaxEntClassifier(training_data)
-            else:
-                raise ValueError("Invalid classifier type specified.")
-            classification = classifier.classify(text)
-            return {"status": "success", "data": classification}
+            label = classifier.classify(text)
+            return {"status": "success", "data": label}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to classify text: {str(e)}"}
+            return {"status": "error", "message": f"Failed to classify text: {e}"}
 
-    # -------------------- Utility Methods --------------------
+    # -------------------------------------------------------------------------
+    # Utility Methods
+    # -------------------------------------------------------------------------
 
-    def check_mode(self):
+    def strip_punctuation(self, text):
         """
-        Check the current mode of the adapter.
-        
+        Remove punctuation from the given text.
+
+        Parameters:
+            text (str): The text to process.
+
         Returns:
-            dict: Status and current mode.
+            dict: A dictionary containing the status and the processed text or error message.
         """
-        return {"status": "success", "data": self.mode}
+        try:
+            stripped_text = strip_punc(text)
+            return {"status": "success", "data": stripped_text}
+        except Exception as e:
+            return {"status": "error", "message": f"Failed to strip punctuation: {e}"}
+
+    def download_corpora(self):
+        """
+        Download all necessary corpora for TextBlob.
+
+        Returns:
+            dict: A dictionary containing the status and a success message or error message.
+        """
+        try:
+            download_all()
+            return {"status": "success", "message": "Corpora downloaded successfully."}
+        except Exception as e:
+            return {"status": "error", "message": f"Failed to download corpora: {e}"}
+
+    # -------------------------------------------------------------------------
+    # Error Handling and Fallback
+    # -------------------------------------------------------------------------
+
+    def fallback_mode_message(self):
+        """
+        Provide a message indicating fallback mode is active.
+
+        Returns:
+            dict: A dictionary containing the status and a fallback message.
+        """
+        if self.mode == "fallback":
+            return {"status": "warning", "message": "Fallback mode is active. Some features may be unavailable."}
+        return {"status": "success", "message": "Import mode is active."}
