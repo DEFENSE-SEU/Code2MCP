@@ -130,6 +130,14 @@ def _generate_mcp_service(analysis_result: Dict[str, Any], retry_info: Dict[str,
         llm_service = get_llm_service()
         
         project_type = _detect_project_type(analysis_result)
+        deps = analysis_result.get("dependencies", {})
+        has_pyproject = bool(deps.get("pyproject"))
+        packages = (analysis_result.get("structure") or {}).get("packages") or []
+        core_modules = (analysis_result.get("llm_analysis") or {}).get("core_modules", [])
+        has_signatures = any(isinstance(m.get("function_signatures"), dict) and m.get("function_signatures") for m in core_modules)
+
+        if project_type != "C/C++" and (not has_pyproject or not packages or has_signatures):
+            return _generate_mcp_service_fallback(analysis_result)
         
         system_prompt = """You are a professional Python code generation expert.
 
@@ -174,21 +182,23 @@ Project type: {project_type} project
 Requirements:
 1. Generate a complete MCP (Model Context Protocol) service file using fastmcp library
 2. Include necessary import statements: from fastmcp import FastMCP
-3. Use FastMCP class to create the service application: mcp = FastMCP("service_name")
-4. Generate rich tool endpoints for each core module, using @mcp.tool decorator, including name and description parameters
-5. Focus on core functionality endpoints only
-6. Must include create_app() function, which returns FastMCP instance
-7. Tool functions must return a standard dictionary, containing success/result/error fields, do not add description or other extra fields
-8. Do not use *args or **kwargs in any @mcp.tool function; all parameters must be explicit and typed
+3. ALWAYS add path settings at the top to include the local source directory on sys.path:
+   - import os, import sys
+   - source_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "source")
+   - if source_path not in sys.path: sys.path.insert(0, source_path)
+4. Use FastMCP class to create the service application: mcp = FastMCP("service_name")
+5. Generate rich tool endpoints for each core module, using @mcp.tool decorator, including name and description parameters
+6. Focus on core functionality endpoints only
+7. Must include create_app() function, which returns FastMCP instance
+8. Tool functions must return a standard dictionary, containing success/result/error fields, do not add description or other extra fields
+9. Do not use *args or **kwargs in any @mcp.tool function; all parameters must be explicit and typed
 
 CRITICAL Import Requirements:
-- The repository will be installed as an editable package via 'pip install -e ./source'
-- Use the package name from pyproject.toml for imports (e.g., if name="textblob", use "from textblob import TextBlob")
-- NEVER use "from src.*" or "from source.*" in imports
-- Remove any "source." or "src." prefix from package names in the analysis result
-- Import from the installed package name directly
-- Example: If pyproject.toml has name="textblob", use "from textblob import TextBlob", NOT "from src.textblob.base import BaseBlob"
-- All imports should work with the editable package installation"""
+- If pyproject.toml exists with a valid package name, you may import using that package name.
+- If pyproject.toml does NOT exist or the package cannot be imported, import modules using local paths after sys.path injection (e.g., "from scripts.SequencePatternMatching import ...").
+- Do NOT invent new top-level package names that do not exist.
+- You may remove any leading "source." or "src." prefix from analysis results when importing locally after sys.path injection.
+- All imports must work out-of-the-box without requiring packaging when pyproject.toml is absent."""
 
         if retry_info:
             error_analysis = retry_info.get('error_analysis', {})
@@ -381,45 +391,19 @@ def {func}(*args, **kwargs):
                     else:
                         imports.append(f"from {import_path} import {', '.join(all_items)}")
                 
+                # Deterministic wrappers using function_signatures from analysis
+                func_sigs = module.get("function_signatures", {})
                 for func in clean_functions:
+                    params = func_sigs.get(func, []) if isinstance(func_sigs, dict) else []
+                    param_list = ", ".join(f"{p}: str" for p in params) if params else "payload: dict"
+                    call_args = ", ".join(params) if params else "**payload"
                     tools_code += f"""
-@mcp.tool(name="{func}", description="{func} function")
-def {func}(*args, **kwargs):
-    \"\"\"{func} function\"\"\"
+@mcp.tool(name="{func}", description="Auto-wrapped function {func}")
+def {func}({param_list}):
     try:
         if {func} is None:
-            return {{"success": False, "result": None, "error": "Function {func} is not available, path may need adjustment"}}
-        
-        # MCP parameter type conversion
-        converted_args = []
-        converted_kwargs = kwargs.copy()
-        
-        # Handle position argument type conversion
-        for arg in args:
-            if isinstance(arg, str):
-                # Try to convert to numeric type
-                try:
-                    if '.' in arg:
-                        converted_args.append(float(arg))
-                    else:
-                        converted_args.append(int(arg))
-                except ValueError:
-                    converted_args.append(arg)
-            else:
-                converted_args.append(arg)
-        
-        # Handle keyword argument type conversion
-        for key, value in converted_kwargs.items():
-            if isinstance(value, str):
-                try:
-                    if '.' in value:
-                        converted_kwargs[key] = float(value)
-                    else:
-                        converted_kwargs[key] = int(value)
-                except ValueError:
-                    pass
-        
-        result = {func}(*converted_args, **converted_kwargs)
+            return {{"success": False, "result": None, "error": "Function {func} is not available"}}
+        result = {func}({call_args})
         return {{"success": True, "result": result, "error": None}}
     except Exception as e:
         return {{"success": False, "result": None, "error": str(e)}}
@@ -486,7 +470,8 @@ import ctypes
 from pathlib import Path
 
 source_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "source")
-sys.path.insert(0, source_path)
+if source_path not in sys.path:
+    sys.path.insert(0, source_path)
 
 from fastmcp import FastMCP
 
@@ -521,7 +506,8 @@ if __name__ == "__main__":
 import sys
 
 source_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "source")
-sys.path.insert(0, source_path)
+if source_path not in sys.path:
+    sys.path.insert(0, source_path)
 
 from fastmcp import FastMCP
 
@@ -541,9 +527,8 @@ if __name__ == "__main__":
 """
     return content
 
-# Generate import mode adapter
 def _generate_adapter_import(analysis_result: Dict[str, Any], loop_summary: Dict[str, Any] | None = None) -> str:
-    """Generate Import mode adapter code using LLM"""
+    
     try:
         llm_service = get_llm_service()
         
@@ -969,10 +954,20 @@ def _prune_analysis_for_generation(analysis_result: Dict[str, Any], repo_root: s
         conf = m.get("import_confidence", "medium")
         if not pkg or "tests" in pkg.lower():
             continue
-        rel = pkg[7:].replace(".", os.sep) if pkg.startswith("source.") else pkg.replace(".", os.sep)
-        mod_file = os.path.join(src_dir, rel + ".py")
-        init_file = os.path.join(src_dir, rel, "__init__.py")
-        target_file = mod_file if os.path.isfile(mod_file) else init_file if os.path.isfile(init_file) else None
+        rel_pkg = pkg[7:].replace(".", os.sep) if pkg.startswith("source.") else pkg.replace(".", os.sep)
+        mod_file_pkg = os.path.join(src_dir, rel_pkg + ".py")
+        init_file = os.path.join(src_dir, rel_pkg, "__init__.py")
+        module_name = m.get("module", "")
+        rel_mod = (pkg + "." + module_name) if module_name and pkg else module_name or pkg
+        rel_mod_path = rel_mod.replace(".", os.sep) if rel_mod else ""
+        mod_file_mod = os.path.join(src_dir, rel_mod_path + ".py") if rel_mod_path else None
+        target_file = None
+        if mod_file_pkg and os.path.isfile(mod_file_pkg):
+            target_file = mod_file_pkg
+        elif init_file and os.path.isfile(init_file):
+            target_file = init_file
+        elif mod_file_mod and os.path.isfile(mod_file_mod):
+            target_file = mod_file_mod
         if not target_file:
             continue
         try:
@@ -1067,6 +1062,44 @@ def generate_node(state: Dict[str, Any]) -> Dict[str, Any]:
     if not os.path.exists(source_init_path):
         repo_name = repo.get("name", "unknown")
         write_file(source_init_path, f"# -*- coding: utf-8 -*-\n\"\"\"\n{repo_name} Project Package Initialization File\n\"\"\"\n")
+    
+    # Dynamically ensure package __init__.py along core module import paths
+    try:
+        llm_analysis = analysis.get("llm_analysis", {})
+        core_modules = llm_analysis.get("core_modules", [])
+        def _ensure_pkg_inits(abs_dir: str):
+            if not abs_dir or not abs_dir.startswith(source_dir):
+                return
+            parts = []
+            rel = os.path.relpath(abs_dir, source_dir)
+            if rel == ".":
+                return
+            for segment in rel.split(os.sep):
+                parts.append(segment)
+                cur = os.path.join(source_dir, *parts)
+                if os.path.isdir(cur):
+                    init_p = os.path.join(cur, "__init__.py")
+                    if not os.path.exists(init_p):
+                        write_file(init_p, "# -*- coding: utf-8 -*-\n")
+        for m in core_modules:
+            pkg = m.get("package", "") or ""
+            mod = m.get("module", "") or ""
+            # Normalize prefixed paths
+            if pkg.startswith("source."):
+                pkg = pkg[7:]
+            if pkg.startswith("src."):
+                pkg = pkg[4:]
+            pkg_path = os.path.join(source_dir, *[p for p in pkg.split(".") if p]) if pkg else None
+            if pkg_path and os.path.exists(pkg_path):
+                _ensure_pkg_inits(pkg_path)
+            # If module is a submodule under package
+            if mod and mod not in (pkg or ""):
+                mod_path = os.path.join(source_dir, *[p for p in mod.split(".") if p])
+                if os.path.exists(mod_path):
+                    _ensure_pkg_inits(mod_path)
+    except Exception:
+        # Best-effort; do not fail generation on init creation
+        pass
     
     llm_analysis = analysis.get("llm_analysis", {})
     core_modules = llm_analysis.get("core_modules", [])

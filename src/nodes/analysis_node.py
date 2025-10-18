@@ -28,6 +28,43 @@ def _is_valid_deepwiki_content(content: str) -> bool:
     
     return False
 
+
+def _scan_source_symbols_with_signatures(source_dir: str) -> Dict[str, Any]:
+    symbols: Dict[str, Any] = {}
+    if not (source_dir and os.path.isdir(source_dir)):
+        return symbols
+    for root, dirs, files in os.walk(source_dir):
+        dirs[:] = [d for d in dirs if not d.startswith('test') and d not in ['__pycache__', '.git']]
+        for file in files:
+            if not file.endswith('.py'):
+                continue
+            file_path = os.path.join(root, file)
+            rel_path = os.path.relpath(file_path, source_dir)
+            module_path = rel_path.replace(os.sep, '.').replace('.py', '')
+            if module_path.endswith('.__init__'):
+                module_path = module_path[:-9]
+            try:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    code = f.read()
+                import ast
+                tree = ast.parse(code or '')
+                funcs: Dict[str, list] = {}
+                classes: set = set()
+                for node in tree.body:
+                    if isinstance(node, ast.FunctionDef) and not node.name.startswith('_'):
+                        params = [arg.arg for arg in node.args.args]
+                        funcs[node.name] = params
+                    elif isinstance(node, ast.ClassDef) and not node.name.startswith('_'):
+                        classes.add(node.name)
+                if funcs or classes:
+                    symbols[module_path] = {
+                        'functions': funcs,
+                        'classes': classes,
+                    }
+            except Exception:
+                continue
+    return symbols
+
 def _scan_python_packages(root_dir: str) -> List[str]:
     logger.info(f"Starting Python package scan, root directory: {root_dir}")
     packages: List[str] = []
@@ -352,10 +389,35 @@ def analysis_node(state: Dict[str, Any]) -> Dict[str, Any]:
     llm_service = get_llm_service()
     logger.info("LLM service obtained")
     
+    # Static AST-driven source scan to ensure correctness on script-style repos
+    source_symbols = _scan_source_symbols_with_signatures(source_dir)
+    static_core_modules: List[Dict[str, Any]] = []
+    for module_path, sym in source_symbols.items():
+        pkg = module_path.rsplit('.', 1)[0] if '.' in module_path else module_path
+        mod = module_path.split('.')[-1]
+        static_core_modules.append({
+            "package": pkg,
+            "module": mod,
+            "functions": sorted(list(sym.get('functions', {}).keys())),
+            "classes": sorted(list(sym.get('classes', []))),
+            "function_signatures": sym.get('functions', {}),
+            "description": "Discovered via AST scan"
+        })
+
     logger.info("Starting LLM analysis...")
-    # Pass DeepWiki analysis results to LLM
     llm_analysis = _analyze_with_llm(llm_service, repo_url, summary, packages, entry_points, deepwiki_analysis)
     logger.info("LLM analysis completed")
+
+    # Prefer static modules when no pyproject or no packages found to avoid invented package names
+    if (not packages) or (not dependencies.get("pyproject")):
+        llm_analysis = dict(llm_analysis or {})
+        llm_analysis["core_modules"] = static_core_modules or llm_analysis.get("core_modules", [])
+        # Favor local import strategy
+        llm_analysis["import_strategy"] = {
+            "primary": "import",
+            "fallback": llm_analysis.get("import_strategy", {}).get("fallback", "cli"),
+            "confidence": 0.9,
+        }
 
     analysis_result = {
         "summary": summary,
