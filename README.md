@@ -1,4 +1,7 @@
 # Code2MCP
+![Official Repository](https://img.shields.io/badge/Repo-Official-green?style=flat-square)
+[![arXiv](https://img.shields.io/badge/arXiv-2509.05941-b31b1b.svg?style=flat-square)](https://arxiv.org/abs/2509.05941)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 ## Project Overview
 
