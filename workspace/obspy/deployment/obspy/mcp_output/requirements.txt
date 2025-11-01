@@ -1,0 +1,19 @@
+fastmcp>=0.1.0
+pydantic>=2.0.0
+numpy
+scipy
+matplotlib
+lxml
+sqlalchemy
+future
+decorator
+requests
+setuptools
+
+# Optional Dependencies
+# cartopy
+# pyproj
+# h5py
+# pandas
+# pytest
+# sphinx

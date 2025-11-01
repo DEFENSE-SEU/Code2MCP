@@ -1,0 +1,36 @@
+.TH MS_GSWAP 3 2006/12/20 "Libmseed API"
+.SH NAME
+ms_gswap - Generalized, in-place byte swapping routines
+
+.SH SYNOPSIS
+.nf
+.B #include <libmseed.h>
+
+.BI "void  \fBms_gswap2\fP ( void *" data2 " );"
+
+.BI "void  \fBms_gswap3\fP ( void *" data3 " );"
+
+.BI "void  \fBms_gswap4\fP ( void *" data4 " );"
+
+.BI "void  \fBms_gswap8\fP ( void *" data8 " );"
+
+.BI "void  \fBms_gswap2a\fP ( void *" data2 " );"
+
+.BI "void  \fBms_gswap4a\fP ( void *" data4 " );"
+
+.BI "void  \fBms_gswap8a\fP ( void *" data8 " );"
+.fi
+
+.SH DESCRIPTION
+These routines swap between LSBF (little-endian) and MSBF (big-endian)
+byte orders.  The specified quantities are swapped in-place.
+
+The \fBms_gswap*a\fP routines are provided for backwards compatibility, but
+should not be used in new code. They are aliases for the regular versions
+above.
+
+.SH AUTHOR
+.nf
+Chad Trabant
+IRIS Data Management Center
+.fi

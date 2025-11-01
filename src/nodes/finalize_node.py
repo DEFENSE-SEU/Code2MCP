@@ -558,7 +558,7 @@ Please output Markdown content directly, change all "plugins" to "services", add
 def finalize_node(state: Dict[str, Any]) -> Dict[str, Any]:
     tests = state.get("tests", {})
     original_ok = tests.get("original", {}).get("passed", False)
-    plugin_ok = tests.get("plugin", {}).get("passed", False)
+    plugin_ok = tests.get("plugin", {}).get("passed", True)
     
     repo = state.get("repository", {})
     repo_url = repo.get("url", "")

@@ -1,0 +1,25 @@
+#
+# Nmake file - Windows version
+# Use 'nmake -f Makefile.win'
+
+NODEBUG=1
+
+INCS = /I..
+OPTS = -D_CRT_SECURE_NO_WARNINGS
+LIBS = ../libmseed.lib
+BINS = msrepack.exe msview.exe
+
+all: $(BINS)
+
+msrepack.exe: msrepack.obj
+	link.exe /nologo /out:msrepack.exe $(LIBS) msrepack.obj
+
+msview.exe: msview.obj
+	link.exe /nologo /out:msview.exe $(LIBS) msview.obj
+
+.c.obj:
+	$(CC) /nologo $(CFLAGS) $(INCS) $(OPTS) /c $<
+
+# Clean-up directives
+clean:
+	-del a.out core *.o *.obj *% *~ $(BINS)

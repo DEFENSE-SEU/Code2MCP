@@ -1,5 +1,4 @@
 import os
-import subprocess
 import shutil
 from pathlib import Path
 
@@ -67,7 +66,6 @@ def deploy_to_huggingface(workspace_dir, hf_username=None, hf_token=None):
                     ignore=shutil.ignore_patterns('.git', '.git*', '__pycache__')
                 )
             except Exception:
-                # Continue even if copying source fails (e.g., Windows permission issues)
                 pass
         
         def _collect_requirements() -> str:
@@ -80,39 +78,34 @@ def deploy_to_huggingface(workspace_dir, hf_username=None, hf_token=None):
                     return
                 if s not in reqs:
                     reqs.append(s)
-            # Base runtime
             add_line("fastmcp")
             add_line("fastapi")
             add_line("uvicorn[standard]")
 
-            # Merge from generated MCP requirements
             mcp_req = mcp_output / "requirements.txt"
             if mcp_req.exists():
                 with open(mcp_req, "r", encoding="utf-8") as f:
                     for line in f:
                         add_line(line)
 
-            # Merge from source requirements.txt if present
             src_req = source_dir / "requirements.txt"
             if src_req.exists():
                 with open(src_req, "r", encoding="utf-8") as f:
                     for line in f:
                         add_line(line)
 
-            # Always try to parse pyproject.toml for [project].dependencies
             pyproject = source_dir / "pyproject.toml"
             if pyproject.exists():
                 try:
                     try:
-                        import tomllib as _toml  # py311+
-                    except Exception:  # pragma: no cover
-                        import tomli as _toml  # type: ignore
+                        import tomllib as _toml
+                    except Exception:
+                        import tomli as _toml
                     with open(pyproject, "rb") as fp:
                         data = _toml.load(fp)
                     for item in (data.get("project", {}).get("dependencies", []) or []):
                         add_line(item)
                 except Exception:
-                    # Fallback to regex if toml parsing unavailable
                     text = pyproject.read_text(encoding="utf-8", errors="ignore")
                     import re
                     m = re.search(r"\[project\][\s\S]*?dependencies\s*=\s*\[(.*?)\]", text, re.IGNORECASE | re.DOTALL)
@@ -165,16 +158,16 @@ app = FastAPI(
 
 @app.get("/")
 def root():
-    return {{
+    return {
         "service": "{repo_name.title()} MCP Service",
         "version": "1.0.0",
         "status": "running",
         "transport": os.environ.get("MCP_TRANSPORT", "http")
-    }}
+    }
 
 @app.get("/health")
 def health_check():
-    return {{"status": "healthy", "service": "{repo_name} MCP"}}
+    return {"status": "healthy", "service": "{repo_name} MCP"}
 
 @app.get("/tools")
 def list_tools():
@@ -183,13 +176,13 @@ def list_tools():
         mcp_app = create_app()
         tools = []
         for tool_name, tool_func in mcp_app.tools.items():
-            tools.append({{
+            tools.append({
                 "name": tool_name,
                 "description": tool_func.__doc__ or "No description available"
-            }})
-        return {{"tools": tools}}
+            })
+        return {"tools": tools}
     except Exception as e:
-        return {{"error": f"Failed to load tools: {{str(e)}}"}}
+        return {"error": f"Failed to load tools: {str(e)}"}
 
 if __name__ == "__main__":
     import uvicorn
@@ -287,49 +280,42 @@ venv/
         with open(deploy_dir / ".gitignore", "w", encoding="utf-8") as f:
             f.write(gitignore_content)
         
-        subprocess.run(
-            ["huggingface-cli", "login", "--token", hf_token, "--add-to-git-credential"],
-            capture_output=True,
-            check=False
-        )
+        try:
+            from huggingface_hub import HfApi
+        except Exception:
+            return {
+                "success": False,
+                "error": "huggingface_hub not installed. Please: pip install huggingface_hub"
+            }
         
         space_name = f"{repo_name}-mcp"
-        subprocess.run(
-            ["huggingface-cli", "repo", "create", space_name, "--type", "space", "--space_sdk", "docker"],
-            capture_output=True,
-            check=False
-        )
-        
-        original_dir = os.getcwd()
-        os.chdir(deploy_dir)
+        space_id = f"{hf_username}/{space_name}"
+        api = HfApi(token=hf_token)
+        try:
+            api.create_repo(repo_id=space_id, repo_type="space", space_sdk="docker", exist_ok=True)
+        except Exception as e:
+            pass
         
         try:
-            if (deploy_dir / ".git").exists():
-                shutil.rmtree(deploy_dir / ".git")
-            
-            subprocess.run(["git", "init"], capture_output=True, check=False)
-            subprocess.run(["git", "add", "."], capture_output=True, check=False)
-            subprocess.run(["git", "commit", "-m", f"Deploy {repo_name} MCP service"], capture_output=True, check=False)
-            
-            hf_remote = f"https://{hf_username}:{hf_token}@huggingface.co/spaces/{hf_username}/{space_name}"
-            subprocess.run(["git", "remote", "add", "hf", hf_remote], capture_output=True, check=False)
-            
-            result = subprocess.run(["git", "push", "hf", "main", "--force"], capture_output=True, text=True)
-            
-            if result.returncode == 0:
-                return {
-                    "success": True,
-                    "url": f"https://{hf_username}-{space_name}.hf.space",
-                    "space_url": f"https://huggingface.co/spaces/{hf_username}/{space_name}",
-                    "repo_name": repo_name
-                }
-            else:
-                return {
-                    "success": False,
-                    "error": f"Git push failed: {result.stderr}"
-                }
-        finally:
-            os.chdir(original_dir)
+            api.upload_folder(
+                repo_id=space_id,
+                repo_type="space",
+                folder_path=str(deploy_dir),
+                path_in_repo="",
+                commit_message=f"Deploy {repo_name} MCP service"
+            )
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Upload failed: {str(e)}"
+            }
+        
+        return {
+            "success": True,
+            "url": f"https://{hf_username}-{space_name}.hf.space",
+            "space_url": f"https://huggingface.co/spaces/{hf_username}/{space_name}",
+            "repo_name": repo_name
+        }
             
     except Exception as e:
         return {

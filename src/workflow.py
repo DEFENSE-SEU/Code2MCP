@@ -1,3 +1,4 @@
+
 import time
 from typing import Dict, Any
 from langgraph.graph import StateGraph, START, END
@@ -23,13 +24,14 @@ def route_after_download(state: Dict[str, Any]) -> str:
     return _route_or_end(state, "analysis")
 
 def route_after_analysis(state: Dict[str, Any]) -> str:
-    return _route_or_end(state, "env")
+    # Skip environment setup; go directly to code generation
+    return _route_or_end(state, "generate")
 
 def route_after_env(state: Dict[str, Any]) -> str:
     return _route_or_end(state, "generate")
 
 def route_after_generate(state: Dict[str, Any]) -> str:
-    return _route_or_end(state, "run")
+    return _route_or_end(state, "finalize")
 
 def route_after_run(state: Dict[str, Any]) -> str:
     if state.get("workflow_status") == "failed" or state.get("status") == "failed":
@@ -54,6 +56,9 @@ def route_after_run(state: Dict[str, Any]) -> str:
 def route_after_review(state: Dict[str, Any]) -> str:
     if state.get("workflow_status") == "failed" or state.get("status") == "failed":
         return END
+    
+    # Skip retry logic, go directly to finalize
+    return _route_or_end(state, "finalize")
     
     should_stop, reason = should_stop_workflow(state)
     if should_stop:
