@@ -6,12 +6,10 @@ ENV PATH="/home/user/.local/bin:$PATH"
 
 WORKDIR /app
 
-COPY --chown=user ./obspy/mcp_output/requirements.txt requirements.txt
+COPY --chown=user ./requirements.txt requirements.txt
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 COPY --chown=user . /app
-
-ENV PYTHONPATH=/app/obspy/source:$PYTHONPATH
 ENV MCP_TRANSPORT=http
 ENV MCP_PORT=7860
 

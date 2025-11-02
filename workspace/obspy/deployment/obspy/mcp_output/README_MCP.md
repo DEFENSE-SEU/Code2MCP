@@ -2,127 +2,93 @@
 
 ## Project Introduction
 
-ObsPy is a Python framework designed for processing seismological data. It provides tools for reading and writing various seismic data formats, accessing remote data services, and performing advanced signal processing. The goal of ObsPy is to simplify and accelerate the development of seismological applications by offering a modular and extensible architecture.
-
-Key features include:
-- Support for multiple seismic data formats (e.g., MiniSEED, SAC, StationXML).
-- Advanced signal processing utilities (e.g., filtering, resampling, cross-correlation).
-- Tools for seismic travel time calculations and ray path modeling.
-- Visualization capabilities for waveform plotting and focal mechanism beachballs.
-- Client services for accessing remote seismic data centers.
+ObsPy is a Python framework designed for processing seismological data. It provides services for reading and writing common seismic file formats, accessing remote data centers, performing advanced signal processing, and visualizing seismological data. ObsPy aims to simplify and accelerate the development of applications for seismology.
 
 ## Installation Method
 
-To install ObsPy, ensure you have Python 3.7 or later installed. Use the following command to install ObsPy and its dependencies:
+To install ObsPy, ensure you have Python installed on your system. ObsPy requires the following dependencies:
 
-pip install obspy
+- Required: numpy, scipy, matplotlib, lxml, future, decorator, requests, sqlalchemy
+- Optional: cartopy, pyproj, h5py, pandas, pytest, sphinx
 
-### Required Dependencies
-- numpy
-- scipy
-- matplotlib
-- lxml
-- sqlalchemy
-- future
-- decorator
-- requests
-- setuptools
+Install ObsPy using pip:
 
-### Optional Dependencies
-- cartopy
-- pyproj
-- h5py
-- pandas
-- pytest
-- sphinx
+`pip install obspy`
 
-For optional features, install the corresponding libraries as needed.
+Alternatively, you can install ObsPy from source:
+
+1. Clone the repository:  
+   `git clone https://github.com/obspy/obspy.git`
+2. Navigate to the project directory:  
+   `cd obspy`
+3. Install using setup.py:  
+   `python setup.py install`
 
 ## Quick Start
 
-Here is a quick guide to using ObsPy's core functionalities:
+Here is a quick example to get started with ObsPy:
 
-1. **Read seismic data**:
-   Use the `read` function to load waveform data from supported formats.
-   Example: `stream = obspy.read("example.mseed")`
+1. **Read seismic data**:  
+   `stream = obspy.read("path/to/seismic_data.mseed")`
 
-2. **Process data**:
-   Apply filters, merge traces, or resample data using the `Stream` object.
-   Example: `stream.filter("bandpass", freqmin=1.0, freqmax=10.0)`
+2. **Apply a bandpass filter**:  
+   `filtered_stream = stream.filter("bandpass", freqmin=1.0, freqmax=10.0)`
 
-3. **Visualize data**:
-   Plot waveforms or focal mechanisms.
-   Example: `stream.plot()`
+3. **Plot the filtered data**:  
+   `filtered_stream.plot()`
 
-4. **Access remote data**:
-   Use the FDSN client to fetch waveform or event data from data centers.
-   Example: `client.get_waveforms(network="IU", station="ANMO", location="00", channel="BHZ", starttime=start, endtime=end)`
-
-5. **Calculate travel times**:
-   Use the TauPyModel service for seismic travel time calculations.
-   Example: `model.get_travel_times(source_depth_in_km=10, distance_in_degree=30, phase_list=["P", "S"])`
+4. **Fetch data from a remote data center**:  
+   `client = obspy.clients.fdsn.Client("IRIS")`  
+   `waveforms = client.get_waveforms(network="IU", station="ANMO", location="00", channel="BHZ", starttime=start_time, endtime=end_time)`
 
 ## Available Tools and Endpoints List
 
-### Core Services
-- **Stream and Trace**: Handles seismic time series data, including reading, writing, merging, and splitting.
-- **UTCDateTime**: Provides precise time handling for seismic data.
-- **Event and Catalog**: Represents seismic events and collections of events.
-- **Inventory**: Manages station metadata, including networks, stations, and channels.
+ObsPy provides a variety of services and endpoints for seismological data processing:
 
-### Signal Processing Services
-- **Filtering**: Apply bandpass, lowpass, or highpass filters.
-- **Resampling**: Change the sampling rate of seismic data.
-- **Cross-correlation**: Perform cross-correlation analysis on seismic traces.
+1. **Core Services**:
+   - `Stream` and `Trace`: Handle seismic data streams and traces, including reading, writing, merging, and splitting.
+   - `UTCDateTime`: Precise time handling for geophysical data.
+   - `Event` and `Catalog`: Represent seismic events and collections of events.
+   - `Inventory`: Manage station metadata.
 
-### I/O Services
-- **MiniSEED**: Read and write MiniSEED files.
-- **SAC**: Handle SAC format data.
-- **StationXML**: Manage station metadata in StationXML format.
+2. **I/O Services**:
+   - `read`: Read waveform data from various formats.
+   - `read_inventory`: Read station metadata.
+   - `read_events`: Read seismic event data.
+   - `write`: Write data to supported formats.
 
-### Geodetic Calculations
-- **Distance and Azimuth**: Calculate distances and azimuths between geographic coordinates.
+3. **Signal Processing Services**:
+   - `bandpass`, `lowpass`, `highpass`, `resample`: Apply filters and resampling to seismic data.
+   - `detrend`, `differentiate`, `integrate`: Perform signal processing operations.
 
-### Visualization Services
-- **Waveform Plotting**: Visualize seismic waveforms.
-- **Beachball Plots**: Generate focal mechanism diagrams.
+4. **Seismic Travel Time Services**:
+   - `get_travel_times`, `get_ray_paths`, `get_pierce_points`: Calculate seismic travel times and ray paths using predefined Earth models.
 
-### Client Services
-- **FDSN Web Services**: Access seismic data from remote data centers.
-- **Mass Downloader**: Download large datasets from multiple data centers.
+5. **Visualization Services**:
+   - `plot_beachball`: Plot focal mechanisms (beachballs).
+   - Waveform and spectrogram plotting.
 
-### TauPyModel Services
-- **Travel Time Calculations**: Compute seismic travel times for predefined Earth models.
-- **Ray Path Modeling**: Visualize ray paths for seismic phases.
+6. **Remote Data Access Services**:
+   - FDSN Web Services: Access seismic data from major data centers like IRIS/EarthScope, GEOFON, and ORFEUS.
 
-### Command-Line Tools
-- **obspy-runtests**: Run the ObsPy test suite.
-- **obspy-flinnengdahl**: Generate Flinn-Engdahl region names for coordinates.
-- **obspy-reftekrescue**: Rescue data from Reftek recorders.
-- **obspy-sds-html-report**: Generate HTML reports for SDS waveform archives.
+7. **Command-Line Tools**:
+   - `obspy-runtests`: Run the ObsPy test suite.
+   - `obspy-flinnengdahl`: Generate Flinn-Engdahl region names for coordinates.
+   - `obspy-reftekrescue`: Rescue data from Reftek files.
+   - `obspy-sds-html-report`: Generate HTML reports for SDS archives.
 
 ## Common Issues and Notes
 
-1. **Dependencies**:
-   Ensure all required dependencies are installed. Use `pip install obspy[all]` to include optional dependencies for full functionality.
-
-2. **Environment**:
-   ObsPy is compatible with Python 3.7 and later. It is recommended to use a virtual environment to manage dependencies.
-
-3. **Performance**:
-   For large datasets, consider optimizing memory usage by processing data in chunks or using efficient file formats like MiniSEED.
-
-4. **Data Access**:
-   When using client services, ensure you have a stable internet connection and valid credentials for restricted data centers.
-
-5. **Visualization**:
-   For advanced plotting (e.g., maps), install optional dependencies like `cartopy` and `pyproj`.
+1. **Dependencies**: Ensure all required dependencies are installed before using ObsPy. Optional dependencies are needed for specific functionalities like advanced visualization or data handling.
+2. **Environment**: ObsPy is compatible with Python 3.6 and above. It is recommended to use a virtual environment to manage dependencies.
+3. **Performance**: For large datasets, ensure sufficient memory and processing power. Consider optimizing data handling and processing pipelines for efficiency.
+4. **File Formats**: ObsPy supports a wide range of seismic file formats, including MiniSEED, SAC, SEGY, and StationXML. Ensure your data is in a supported format.
 
 ## Reference Links or Documentation
 
 - [ObsPy GitHub Repository](https://github.com/obspy/obspy)
-- [ObsPy Documentation](https://docs.obspy.org)
-- [ObsPy Tutorials](https://docs.obspy.org/tutorial/)
-- [ObsPy API Reference](https://docs.obspy.org/packages/autogen/obspy.core.html)
+- [ObsPy Documentation](https://docs.obspy.org/)
+- [ObsPy Tutorials](https://docs.obspy.org/tutorial.html)
+- [DeepWiki Overview](https://deepwiki.com/obspy/obspy/1-overview)
 
-For further assistance, refer to the [CONTRIBUTING.md](https://github.com/obspy/obspy/blob/master/CONTRIBUTING.md) and [README.md](https://github.com/obspy/obspy/blob/master/README.md) files in the repository.
+For additional support, refer to the [CONTRIBUTING.md](https://github.com/obspy/obspy/blob/main/CONTRIBUTING.md) and [ISSUE_TEMPLATE.md](https://github.com/obspy/obspy/blob/main/.github/ISSUE_TEMPLATE.md) files in the repository.

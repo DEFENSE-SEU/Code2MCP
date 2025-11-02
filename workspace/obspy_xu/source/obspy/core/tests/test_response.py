@@ -1,0 +1,644 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Test suite for the response handling.
+
+:copyright:
+    Lion Krischer (krischer@geophysik.uni-muenchen.de), 2013
+:license:
+    GNU Lesser General Public License, Version 3
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+import warnings
+from copy import deepcopy
+from math import pi
+
+import numpy as np
+import pytest
+import scipy.interpolate
+
+from obspy import UTCDateTime, read_inventory
+from obspy.core.inventory.response import (
+    _pitick2latex, PolesZerosResponseStage, PolynomialResponseStage, Response,
+    ResponseListResponseStage, ResponseListElement, InstrumentSensitivity)
+from obspy.core.util.base import CatchAndAssertWarnings
+from obspy.core.util.misc import CatchOutput
+from obspy.core.util.obspy_types import ComplexWithUncertainties
+from obspy.signal.invsim import evalresp
+from obspy.io.xseed import Parser
+
+
+@pytest.mark.usefixtures('ignore_numpy_errors')
+class TestResponse:
+    """
+    Tests the for :class:`~obspy.core.inventory.response.Response` class.
+    """
+    def test_evalresp_with_output_from_seed(self, datapath):
+        """
+        The StationXML file has been converted to SEED with the help of a tool
+        provided by IRIS:
+
+        https://seiscode.iris.washington.edu/projects/stationxml-converter
+        """
+        t_samp = 0.05
+        nfft = 16384
+
+        # Test for different output units.
+        units = ["DISP", "VEL", "ACC"]
+        filenames = ["IRIS_single_channel_with_response", "XM.05", "AU.MEEK"]
+
+        for filename in filenames:
+            path = datapath / filename
+            xml_filename = str(path) + ".xml"
+            seed_filename = str(path) + ".seed"
+
+            p = Parser(seed_filename)
+
+            # older systems don't like an end date in the year 2599
+            t_ = UTCDateTime(2030, 1, 1)
+            if p.blockettes[50][0].end_effective_date > t_:
+                p.blockettes[50][0].end_effective_date = None
+            if p.blockettes[52][0].end_date > t_:
+                p.blockettes[52][0].end_date = None
+
+            resp_filename = p.get_resp()[0][-1]
+
+            inv = read_inventory(xml_filename)
+
+            network = inv[0].code
+            station = inv[0][0].code
+            location = inv[0][0][0].location_code
+            channel = inv[0][0][0].code
+            date = inv[0][0][0].start_date
+
+            for unit in units:
+                resp_filename.seek(0, 0)
+
+                seed_response, seed_freq = evalresp(
+                    t_samp, nfft, resp_filename, date=date, station=station,
+                    channel=channel, network=network, locid=location,
+                    units=unit, freq=True)
+
+                xml_response, xml_freq = \
+                    inv[0][0][0].response.get_evalresp_response(t_samp, nfft,
+                                                                output=unit)
+
+                assert np.allclose(seed_freq, xml_freq, rtol=1E-5)
+                assert np.allclose(seed_response, xml_response, rtol=1E-5)
+
+                # also test getting response for a set of discrete frequencies
+                indices = (-2, 0, -1, 1, 2, 20, -30, -100)
+                freqs = [seed_freq[i_] for i_ in indices]
+                response = inv[0][0][0].response
+                got = response.get_evalresp_response_for_frequencies(
+                    freqs, output=unit)
+                expected = [seed_response[i_] for i_ in indices]
+                np.testing.assert_allclose(got, expected, rtol=1E-5)
+
+    def test_pitick2latex(self):
+        assert _pitick2latex(3 * pi / 2) == r'$\frac{3\pi}{2}$'
+        assert _pitick2latex(2 * pi / 2) == r'$\pi$'
+        assert _pitick2latex(1 * pi / 2) == r'$\frac{\pi}{2}$'
+        assert _pitick2latex(0 * pi / 2) == r'$0$'
+        assert _pitick2latex(-1 * pi / 2) == r'$-\frac{\pi}{2}$'
+        assert _pitick2latex(-2 * pi / 2) == r'$-\pi$'
+        assert _pitick2latex(0.5) == r'0.500'
+        assert _pitick2latex(3 * pi + 0.01) == r'9.43'
+        assert _pitick2latex(30 * pi + 0.01) == r'94.3'
+        assert _pitick2latex(300 * pi + 0.01) == r'942.'
+        assert _pitick2latex(3000 * pi + 0.01) == r'9.42e+03'
+
+    def test_response_plot(self, image_path):
+        """
+        Tests the response plot.
+        """
+        resp = read_inventory()[0][0][0].response
+        with CatchAndAssertWarnings():
+            resp.plot(0.001, output="VEL", start_stage=1, end_stage=3,
+                      outfile=image_path)
+
+    def test_response_plot_degrees(self, image_path):
+        """
+        Tests the response plot in degrees.
+        """
+        resp = read_inventory()[0][0][0].response
+        with CatchAndAssertWarnings():
+            resp.plot(0.001, output="VEL", start_stage=1, end_stage=3,
+                      plot_degrees=True, outfile=image_path)
+
+    def test_segfault_after_error_handling(self, testdata):
+        """
+        Many functions in evalresp call `error_return()` which uses longjmp()
+        to jump to some previously set state.
+
+        ObsPy calls some evalresp functions directly so evalresp cannot call
+        setjmp(). In that case longjmp() jumps to an undefined location, most
+        likely resulting in a segfault.
+
+        This test tests a workaround for this issue.
+
+        As long as it does not segfault the test is doing alright.
+        """
+        inv = read_inventory(testdata["TM.SKLT.__.BHZ_faulty_response.xml"])
+
+        t_samp = 0.05
+        nfft = 256
+
+        resp = inv[0][0][0].response
+        with CatchOutput():
+            with pytest.raises(ValueError):
+                resp.get_evalresp_response(t_samp, nfft, output="DISP")
+
+    def test_custom_types_init(self):
+        """
+        Test initializations that involve custom decimal types like
+        `ComplexWithUncertainties`.
+        """
+        # initializing poles / zeros from native types should work
+        poles = [1 + 1j, 1, 1j]
+        zeros = [2 + 3j, 2, 3j]
+        stage = PolesZerosResponseStage(
+            1, 1, 1, "", "", "LAPLACE (HERTZ)", 1, zeros, poles)
+        assert isinstance(stage.zeros[0], ComplexWithUncertainties)
+        assert isinstance(stage.poles[0], ComplexWithUncertainties)
+        assert stage.poles == poles
+        assert stage.zeros == zeros
+
+    def test_response_list_stage(self, testdata):
+        """
+        This is quite rare but it happens.
+        """
+        inv = read_inventory(testdata["IM_IL31__BHZ.xml"])
+
+        sampling_rate = 40.0
+        t_samp = 1.0 / sampling_rate
+        nfft = 100
+
+        with CatchAndAssertWarnings():
+            cpx_response, freq = inv[0][0][0].response.get_evalresp_response(
+                t_samp=t_samp, nfft=nfft, output="VEL", start_stage=None,
+                end_stage=None)
+
+        # Cut of the zero frequency.
+        cpx_response = cpx_response[1:]
+
+        amp = np.abs(cpx_response)
+        phase = np.angle(cpx_response)
+        freq = freq[1:]
+
+        # The expected output goes from 1 to 20 Hz - its somehow really hard
+        # to get evalresp to produce results for the desired frequencies so
+        # I just gave up on it.
+        exp_f, exp_amp, exp_ph = np.loadtxt(
+            testdata["expected_response_IM_IL31__BHZ.txt"]).T
+        # Interpolate.
+        exp_amp = scipy.interpolate.InterpolatedUnivariateSpline(
+            exp_f, exp_amp, k=3)(freq)
+        exp_ph = scipy.interpolate.InterpolatedUnivariateSpline(
+            exp_f, exp_ph, k=3)(freq)
+        exp_ph = np.deg2rad(exp_ph)
+
+        # The output is not exactle the same as ObsPy performs a different
+        # but visually quite a bit better interpolation.
+        np.testing.assert_allclose(amp, exp_amp, rtol=1E-3)
+        np.testing.assert_allclose(phase, exp_ph, rtol=1E-3)
+
+    def test_response_with_no_units_in_stage_1(self, testdata):
+        """
+        ObsPy has some heuristics to deal with this particular degenerate case.
+        Test it here.
+        """
+        inv = read_inventory(testdata["stationxml_no_units_in_stage_1.xml"])
+        r = inv[0][0][0].response
+
+        # The units should already have been fixed from reading the StationXML
+        # files...
+        assert r.response_stages[0].input_units == "M/S"
+        assert r.response_stages[0].input_units_description == \
+            "Meters per second"
+        assert r.response_stages[0].output_units == "V"
+        assert r.response_stages[0].output_units_description == "VOLTS"
+
+        # We have to set the units to None here as there is some other logic in
+        # reading the StationXML files that sets them based on other units...
+        r.response_stages[0].input_units = None
+        r.response_stages[0].output_units = None
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            out = r.get_evalresp_response_for_frequencies(
+                np.array([0.5, 1.0, 2.0]), output="DISP")
+
+        assert len(w) == 2
+        assert w[0].message.args[0] == \
+            "Set the input units of stage 1 to the overall input units."
+        assert w[1].message.args[0] == \
+            "Set the output units of stage 1 to the input units of stage 2."
+
+        # Values compared to evalresp output from RESP file - might not be
+        # right but it does guarantee that ObsPy behaves like evalresp - be
+        # that a good thing or a bad thing.
+        np.testing.assert_allclose(
+            out, [0 + 9869.2911771081963j, 0 + 19738.582354216393j,
+                  0 + 39477.164708432785j])
+
+    def test_resp_from_paz_setting_zeros_poles_and_sensitivity(self):
+        poles = [1 + 2j, 1 - 2j, 2 + 1j, 2 - 1j]
+        zeros = [0, 0, 5]
+        sensitivity = 1201. * (2 ** 26 / 40.)
+        # a0 normalization factor at 1Hz for these values
+        normalization = np.prod(2 * pi * 1j - np.array(zeros))
+        normalization /= np.prod(2 * pi * 1j - np.array(poles))
+        normalization = np.abs(normalization)
+        resp = Response.from_paz(zeros, poles, sensitivity)
+        r_zeros = resp.response_stages[0].zeros
+        r_poles = resp.response_stages[0].poles
+        r_stage_gain = resp.response_stages[0].stage_gain
+        r_sens = resp.instrument_sensitivity.value
+        np.testing.assert_array_equal(r_zeros, zeros)
+        np.testing.assert_array_equal(r_poles, poles)
+        np.testing.assert_equal(r_stage_gain, sensitivity)
+        np.testing.assert_allclose(r_sens / normalization, sensitivity, atol=0,
+                                   rtol=1e-8)
+
+    def test_resp_from_paz_loading_vs_evalresp(self, testdata):
+        zeros = [0., 0.]
+        poles = [-8.443 + 1.443j, -8.443 - 1.443j]
+        filename = testdata['RESP.XX.NS306..SHZ.GS13.1.2180']
+        resp_er = read_inventory(filename)[0][0][0].response
+        loaded_resp = resp_er.get_evalresp_response(.1, 2**6, output='VEL')
+        # The optional kwargs are the same as those being set in the RESP file.
+        resp = Response.from_paz(zeros=zeros, poles=poles, stage_gain=22.0,
+                                 stage_gain_frequency=5.0,
+                                 normalization_frequency=5.0,
+                                 normalization_factor=1.070401)
+        paz_resp = resp.get_evalresp_response(.1, 2**6, output='VEL')
+        np.testing.assert_allclose(paz_resp, loaded_resp)
+
+    def test_str_method_of_the_polynomial_response_stage(self):
+        # First with gain and gain frequency.
+        assert str(PolynomialResponseStage(
+            stage_sequence_number=2,
+            stage_gain=12345.0,
+            stage_gain_frequency=1.0,
+            input_units="PA",
+            input_units_description="Pascal",
+            output_units="COUNTS",
+            output_units_description="digital_counts",
+            frequency_lower_bound=1.0,
+            frequency_upper_bound=2.0,
+            approximation_lower_bound=3.0,
+            approximation_upper_bound=4.0,
+            maximum_error=1.5,
+            coefficients=[1.0, 2.0, 3.0],
+            approximation_type="MACLAURIN",
+            decimation_input_sample_rate=1.0,
+            decimation_factor=2,
+            decimation_offset=3.0,
+            decimation_delay=4.0,
+            decimation_correction=True)) == \
+            "Response type: PolynomialResponseStage, " \
+            "Stage Sequence Number: 2\n" \
+            "\tFrom PA (Pascal) to COUNTS (digital_counts)\n" \
+            "\tStage gain: 12345.0, defined at 1.00 Hz\n" \
+            "\tDecimation:\n" \
+            "\t\tInput Sample Rate: 1.00 Hz\n" \
+            "\t\tDecimation Factor: 2\n" \
+            "\t\tDecimation Offset: 3\n" \
+            "\t\tDecimation Delay: 4.00\n" \
+            "\t\tDecimation Correction: 1.00\n" \
+            "\tPolynomial approximation type: MACLAURIN\n" \
+            "\tFrequency lower bound: 1.0\n" \
+            "\tFrequency upper bound: 2.0\n" \
+            "\tApproximation lower bound: 3.0\n" \
+            "\tApproximation upper bound: 4.0\n" \
+            "\tMaximum error: 1.5\n" \
+            "\tNumber of coefficients: 3"
+
+        # Now only the very minimum.
+        assert str(PolynomialResponseStage(
+            stage_sequence_number=4,
+            stage_gain=None,
+            stage_gain_frequency=None,
+            input_units=None,
+            input_units_description=None,
+            output_units=None,
+            output_units_description=None,
+            frequency_lower_bound=None,
+            frequency_upper_bound=None,
+            approximation_lower_bound=None,
+            approximation_upper_bound=None,
+            maximum_error=None,
+            coefficients=[],
+            approximation_type="MACLAURIN")) == \
+            "Response type: PolynomialResponseStage, " \
+            "Stage Sequence Number: 4\n" \
+            "\tFrom UNKNOWN to UNKNOWN\n" \
+            "\tStage gain: UNKNOWN, defined at UNKNOWN Hz\n" \
+            "\tPolynomial approximation type: MACLAURIN\n" \
+            "\tFrequency lower bound: None\n" \
+            "\tFrequency upper bound: None\n" \
+            "\tApproximation lower bound: None\n" \
+            "\tApproximation upper bound: None\n" \
+            "\tMaximum error: None\n" \
+            "\tNumber of coefficients: 0"
+
+    def test_get_sampling_rates(self, testdata):
+        """
+        Tests for the get_sampling_rates() method.
+        """
+        # Test for the default inventory.
+        resp = read_inventory()[0][0][0].response
+        assert resp.get_sampling_rates() == \
+            {1: {'decimation_factor': 1,
+                 'input_sampling_rate': 200.0,
+                 'output_sampling_rate': 200.0},
+             2: {'decimation_factor': 1,
+                 'input_sampling_rate': 200.0,
+                 'output_sampling_rate': 200.0}}
+
+        # Another, well behaved file.
+        inv = read_inventory(testdata['AU.MEEK.xml'])
+        assert inv[0][0][0].response.get_sampling_rates() == \
+            {1: {'decimation_factor': 1,
+                 'input_sampling_rate': 600.0,
+                 'output_sampling_rate': 600.0},
+             2: {'decimation_factor': 1,
+                 'input_sampling_rate': 600.0,
+                 'output_sampling_rate': 600.0},
+             3: {'decimation_factor': 1,
+                 'input_sampling_rate': 600.0,
+                 'output_sampling_rate': 600.0},
+             4: {'decimation_factor': 3,
+                 'input_sampling_rate': 600.0,
+                 'output_sampling_rate': 200.0},
+             5: {'decimation_factor': 10,
+                 'input_sampling_rate': 200.0,
+                 'output_sampling_rate': 20.0}}
+
+        # This file lacks decimation attributes for the first two stages as
+        # well as one of the later ones. These thus have to be inferred.
+        inv = read_inventory(testdata['DK.BSD..BHZ.xml'])
+        assert inv[0][0][0].response.get_sampling_rates() == \
+            {1: {'decimation_factor': 1,
+                 'input_sampling_rate': 30000.0,
+                 'output_sampling_rate': 30000.0},
+             2: {'decimation_factor': 1,
+                 'input_sampling_rate': 30000.0,
+                 'output_sampling_rate': 30000.0},
+             3: {'decimation_factor': 1,
+                 'input_sampling_rate': 30000.0,
+                 'output_sampling_rate': 30000.0},
+             4: {'decimation_factor': 5,
+                 'input_sampling_rate': 30000.0,
+                 'output_sampling_rate': 6000.0},
+             5: {'decimation_factor': 3,
+                 'input_sampling_rate': 6000.0,
+                 'output_sampling_rate': 2000.0},
+             6: {'decimation_factor': 2,
+                 'input_sampling_rate': 2000.0,
+                 'output_sampling_rate': 1000.0},
+             7: {'decimation_factor': 5,
+                 'input_sampling_rate': 1000.0,
+                 'output_sampling_rate': 200.0},
+             8: {'decimation_factor': 2,
+                 'input_sampling_rate': 200.0,
+                 'output_sampling_rate': 100.0},
+             9: {'decimation_factor': 1,
+                 'input_sampling_rate': 100.0,
+                 'output_sampling_rate': 100.0},
+             10: {'decimation_factor': 5,
+                  'input_sampling_rate': 100.0,
+                  'output_sampling_rate': 20.0}}
+
+    def test_response_calculation_paz_without_decimation(self, testdata):
+        """
+        This test files has two PAZ stages with no decimation attributes.
+
+        Evalresp does not like this so we have to add dummy decimation
+        attributes before calling it.
+        """
+        inv = read_inventory(testdata['DK.BSD..BHZ.xml'])
+        np.testing.assert_allclose(
+            inv[0][0][0].response.get_evalresp_response_for_frequencies(
+                [0.1, 1.0, 10.0], hide_sensitivity_mismatch_warning=True),
+            [6.27191825e+08 + 1.38925202e+08j,
+             6.51826202e+08 + 1.28404787e+07j,
+             2.00067263e+04 - 2.63711751e+03j])
+
+    def test_regression_evalresp(self, testdata):
+        """
+        Regression test for an evalresp issue with a micropressure instrument.
+
+        See #2171.
+        """
+        inv = read_inventory(testdata["IM_I53H1_BDF.xml"])
+        cha_response = inv[0][0][0].response
+        freq_resp = cha_response.get_evalresp_response_for_frequencies([0.0])
+        assert freq_resp == 0.0 + 0.0j
+        np.testing.assert_allclose(
+            inv[0][0][0].response.get_evalresp_response_for_frequencies(
+                [0.1, 1.0, 10.0]),
+            [2.411908e+05 + 2.283852e+04j,
+             2.445572e+05 - 2.480459e+03j,
+             -2.455459e-01 + 4.888214e-02j], rtol=1e-6)
+
+    def test_recalculate_overall_sensitivity(self):
+        """
+        Tests the recalculate_overall_sensitivity_method().
+
+        This is not yet an exhaustive test as responses are complicated...
+        """
+        resp = read_inventory()[0][0][0].response
+        np.testing.assert_allclose(
+            resp.instrument_sensitivity.value,
+            943680000.0)
+        np.testing.assert_allclose(
+            resp.instrument_sensitivity.frequency,
+            0.02)
+        # Recompute - it is not much different but a bit.
+        resp.recalculate_overall_sensitivity(0.02)
+        np.testing.assert_allclose(
+            resp.instrument_sensitivity.value,
+            943681500.0)
+        np.testing.assert_allclose(
+            resp.instrument_sensitivity.frequency,
+            0.02)
+
+        # There is some logic to automatically determine a suitable frequency.
+        # Make sure this does something here.
+        resp = read_inventory()[0][0][0].response
+        resp.recalculate_overall_sensitivity()
+        np.testing.assert_allclose(
+            resp.instrument_sensitivity.value,
+            957562105.3939067)
+        np.testing.assert_allclose(
+            resp.instrument_sensitivity.frequency,
+            1.0)
+
+        # Passing an integer also works. See #2338.
+        resp = read_inventory()[0][0][0].response
+        resp.recalculate_overall_sensitivity(1)
+        np.testing.assert_allclose(
+            resp.instrument_sensitivity.value,
+            957562105.3939067)
+        np.testing.assert_allclose(
+            resp.instrument_sensitivity.frequency,
+            1.0)
+
+    def test_warning_response_list_extrapolation(self):
+        """
+        Tests that a warning message is shown when a response calculation
+        involving a response list stage includes (spline) extrapolation into
+        frequency ranges outside of the band defined by the response list stage
+        elements (frequency-amplitude-phase pairs).
+        """
+        # create some bogus response list stage for the test
+        elems = [
+            ResponseListElement(x, 1, 0) for x in (1, 2, 5, 10, 20, 40, 50)]
+        stage = ResponseListResponseStage(
+            1, 1, 10, "M/S", "M/S", response_list_elements=elems)
+        sens = InstrumentSensitivity(1, 10, "M/S", "M/S")
+        resp = Response(response_stages=[stage], instrument_sensitivity=sens)
+        msg = ("The response contains a response list stage with frequencies "
+               "only from 1.0000 - 50.0000 Hz. You are requesting a response "
+               "from 25.0000 - 100.0000 Hz. The calculated response will "
+               "contain extrapolation beyond the frequency band constrained "
+               "by the response list stage. Please consider adjusting "
+               "'pre_filt' and/or 'water_level' during response removal "
+               "accordingly.")
+        with CatchAndAssertWarnings(expected=[(UserWarning, msg)]):
+            resp.get_evalresp_response(0.005, 2**3)
+
+    def test_unknown_units_no_integration(self, testdata):
+        """
+        Makes sure that when a unit in the list of response stages is not known
+        to evalresp, no tampering (integration/differentiation) is done and
+        response is just calculated as is specified.
+        It used to be that unkown units where reported to evalresp as
+        displacement ("DIS") which led to a differentiation being added
+        internally with the default "output='VEL'".
+        Example is a rotational sensor with input units RAD/S and a flat
+        response and since evalresp does not know RAD or RAD/S the only thing
+        that makes sense is have evalresp not do anything else than use the
+        response as is and ignore "output" option.
+        """
+        inv = read_inventory(testdata['response_radian_per_second.xml'],
+                             format="STATIONXML")
+        resp = inv[0][0][0].response
+        freqs = [0.01, 0.1, 1, 10, 100]
+        overall_sensitivity = 1.00000000e+09
+        msg = (r"The unit 'RAD/S' is not known to ObsPy. It will be passed in "
+               r"to evalresp as 'undefined'. This should result in evalresp "
+               r"using the response as is, without adding any integration or "
+               r"differentiation and the 'output' parameter \(here: 'VEL'\) "
+               r"not having any effect. Please double check output data.")
+        with pytest.warns(UserWarning, match=msg):
+            data = resp.get_evalresp_response_for_frequencies(freqs)
+        assert resp.instrument_sensitivity.value == overall_sensitivity
+        assert np.abs(data).tolist() == [overall_sensitivity] * len(freqs)
+
+    def test_non_SI_unit_input_first_stage(self, testdata):
+        """
+        Regression test for #3369
+
+        Test that non-SI units input (e.g. nanometer/second) is properly taken
+        into account when removing the instrument response, i.e. the additional
+        scaling factor (e.g. 1e09 for nm/s) is applied to the output.
+
+        The change in that issue affects
+        Response._call_eval_resp_for_frequencies() which in turn gets called
+        by..
+         - Response._get_overall_sensitivity_and_gain()
+         - Response.get_evalresp_response_for_frequencies()
+
+        Test all of those three for good measure.
+        """
+        inv = read_inventory(testdata['SL_BOJS_LHZ.xml'], "STATIONXML")
+
+        # original data has nm/s as a non-SI input unit. setup clones with some
+        # different input units
+        inv_nms = inv
+        inv_ms = inv_nms.copy()
+        inv_ms[0][0][0].response.instrument_sensitivity.input_units = 'm/s'
+        inv_ms[0][0][0].response.instrument_sensitivity.value *= 1e9
+        inv_ms[0][0][0].response.response_stages[0].input_units = 'm/s'
+        inv_ms[0][0][0].response.response_stages[0].stage_gain *= 1e9
+        inv_mms = inv_nms.copy()
+        inv_mms[0][0][0].response.instrument_sensitivity.input_units = 'mm/s'
+        inv_mms[0][0][0].response.instrument_sensitivity.value *= 1e6
+        inv_mms[0][0][0].response.response_stages[0].input_units = 'mm/s'
+        inv_mms[0][0][0].response.response_stages[0].stage_gain *= 1e6
+        inv_cms = inv_nms.copy()
+        inv_cms[0][0][0].response.instrument_sensitivity.input_units = 'cm/s'
+        inv_cms[0][0][0].response.instrument_sensitivity.value *= 1e7
+        inv_cms[0][0][0].response.response_stages[0].input_units = 'cm/s'
+        inv_cms[0][0][0].response.response_stages[0].stage_gain *= 1e7
+
+        # test at two frequencies in the flat response part
+        freqs = [0.01, 0.1]
+        expected = [1.84e+09, 1.85e+09]
+
+        for inv in (inv_nms, inv_ms, inv_mms, inv_cms):
+            resp = inv[0][0][0].response
+
+            # test _call_eval_resp_for_frequencies()
+            got, _ = resp._call_eval_resp_for_frequencies(
+                freqs, output='VEL', start_stage=None, end_stage=None)
+            got = np.abs(got)
+            np.testing.assert_allclose(got, expected, rtol=1e-2)
+
+            # test get_evalresp_response_for_frequencies()
+            got = resp.get_evalresp_response_for_frequencies(
+                freqs, output='VEL', start_stage=None, end_stage=None)
+            got = np.abs(got)
+            np.testing.assert_allclose(got, expected, rtol=1e-2)
+
+            # test _get_overall_sensitivity_and_gain()
+            got = [resp._get_overall_sensitivity_and_gain(f, output='VEL')[1]
+                   for f in freqs]
+            np.testing.assert_allclose(got, expected, rtol=1e-2)
+
+    def test_pazresponsestage_hertz_to_radians(self, testdata):
+        """
+        Tests converting a PAZResponseStage from Hertz to Radians/s
+        """
+        inv = read_inventory(testdata['G_CAN__LHZ.xml'], 'STATIONXML')
+        paz_before = inv[0][0][0].response.response_stages[0]
+        paz_after = deepcopy(paz_before)
+        paz_after.to_radians_per_second()
+
+        expected_zeros = [0j, 0j]
+        expected_poles = [-1.233948e-02+1.234319e-02j,
+                          -1.233948e-02-1.234319e-02j,
+                          -3.917566e+01+4.912339e+01j,
+                          -3.917566e+01-4.912339e+01j]
+
+        assert paz_before.pz_transfer_function_type == 'LAPLACE (HERTZ)'
+        assert paz_after.pz_transfer_function_type == \
+            'LAPLACE (RADIANS/SECOND)'
+        assert round(paz_after.normalization_factor, 3) == 3.959488e+03
+        np.testing.assert_allclose(
+            paz_after.zeros, expected_zeros, rtol=1e-6)
+        np.testing.assert_allclose(
+            paz_after.poles, expected_poles, rtol=1e-6)
+
+    def test_unknown_units_PA_recalculate_sensitivity(self, testdata):
+        """
+        Test recalculating overall sensitivity in presence of unusual units, in
+        this case Pascal.
+        """
+        inv = read_inventory(testdata['hydrophone_response_PA.xml'],
+                             format="STATIONXML")
+        resp = inv[0][0][0].response
+        msg = ("ObsPy can not map unit 'PA' to "
+               "displacement, velocity, or acceleration - "
+               "evalresp should still work and just use the response as "
+               "is. This might not be covered by tests, though, so "
+               "proceed with caution and report any unexpected "
+               "behavior.")
+        with pytest.warns(UserWarning, match=msg):
+            resp.recalculate_overall_sensitivity()
+        assert np.isclose(
+            resp.instrument_sensitivity.value, 133579131859239.3, atol=0,
+            rtol=1e-5)

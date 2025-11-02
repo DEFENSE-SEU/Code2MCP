@@ -8,7 +8,7 @@ import subprocess
 from pathlib import Path
 from typing import Dict, Any, List
 from ..utils import setup_logging, write_file, get_llm_service
-from ..tools.deploy_hf import deploy_to_huggingface
+from ..tools.deploy_hf import deploy_to_huggingface, create_and_run_local_scripts
 
 logger = setup_logging()
 
@@ -683,23 +683,32 @@ def finalize_node(state: Dict[str, Any]) -> Dict[str, Any]:
     _save_final_reports(state, workflow_summary, technical_report)
     
     if state.get("workflow_status") == "success":
-        auto_deploy = os.getenv("AUTO_DEPLOY_HF", "false").lower() == "true"
-        if auto_deploy:
-            logger.info("AUTO_DEPLOY_HF enabled, deploying to HuggingFace...")
+        try:
             repo = state.get("repository", {})
             repo_root = repo.get("local_paths", {}).get("repo_root")
             repo_name = repo.get("name")
             if repo_root:
-                result = deploy_to_huggingface(repo_root)
+                do_push = (os.getenv("AUTO_DEPLOY_HF", "false").lower() == "true") and (os.getenv("HF_PUSH", "false").lower() == "true")
+                result = deploy_to_huggingface(repo_root, push=do_push)
                 if result.get("success"):
-                    logger.info(f"HuggingFace deployment successful: {result.get('url')}")
                     state["huggingface_deployment"] = result
-                    
-                    auto_connect = os.getenv("AUTO_CONNECT_CLIENT", "").lower()
-                    if auto_connect in ["cursor", "claude"]:
-                        _connect_mcp_client(auto_connect, repo_name, result.get("url"))
+                    if do_push and result.get("url"):
+                        logger.info(f"HuggingFace deployment successful: {result.get('url')}")
+                        auto_connect = os.getenv("AUTO_CONNECT_CLIENT", "").lower()
+                        if auto_connect in ["cursor", "claude"]:
+                            _connect_mcp_client(auto_connect, repo_name, result.get("url"))
                 else:
                     logger.warning(f"HuggingFace deployment failed: {result.get('error')}")
+        except Exception as e:
+            logger.warning(f"Deployment scaffolding/push step failed: {e}")
+
+        try:
+            repo = state.get("repository", {})
+            repo_root = repo.get("local_paths", {}).get("repo_root")
+            if repo_root:
+                create_and_run_local_scripts(repo_root, autorun=True)
+        except Exception as e:
+            logger.warning(f"Generate/run local scripts failed: {e}")
     
     logger.info(f"Workflow summary generated, status: {state['status']}")
     if errors:

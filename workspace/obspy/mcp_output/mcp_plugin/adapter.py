@@ -6,24 +6,26 @@ source_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.pa
 sys.path.insert(0, source_path)
 
 # Import statements
+from obspy.scripts.runtests import runtests
+from obspy.scripts.flinnengdahl import flinnengdahl
+from obspy.scripts.reftekrescue import reftekrescue
+from obspy.scripts.sds_html_report import sds_html_report
 from obspy.core.stream import Stream
 from obspy.core.trace import Trace
 from obspy.core.utcdatetime import UTCDateTime
 from obspy.core.event import Event, Catalog
 from obspy.core.inventory import Inventory
 from obspy.signal.interpolation import lanczos_interpolation
-from obspy.signal.trigger import classic_sta_lta, recursive_sta_lta, trigger_onset
+from obspy.signal.trigger import classic_sta_lta, recursive_sta_lta
 from obspy.signal.filter import bandpass
-from obspy.taup.taup_time import get_travel_times
-from obspy.clients.fdsn.client import Client
-from obspy.io.mseed.core import read as read_mseed
-from obspy.io.stationxml.core import read_stationxml
-from obspy.io.quakeml.core import read_events
+from obspy.clients.fdsn import Client
+from obspy.taup import TauPyModel
 
+# Adapter class
 class Adapter:
     """
-    Adapter class for MCP plugin integration with ObsPy functionalities.
-    Provides methods to interact with ObsPy's core classes and functions.
+    Adapter class for integrating and utilizing functionalities from the ObsPy plugin.
+    This class provides methods to interact with various ObsPy modules and functions.
     """
 
     def __init__(self):
@@ -33,294 +35,289 @@ class Adapter:
         self.mode = "import"
 
     # -------------------------------------------------------------------------
-    # Core Data Structures
+    # Module: Scripts
+    # -------------------------------------------------------------------------
+
+    def run_tests(self):
+        """
+        Run the test suite for ObsPy.
+
+        Returns:
+            dict: A dictionary containing the status and any error messages.
+        """
+        try:
+            runtests()
+            return {"status": "success", "message": "Tests executed successfully."}
+        except Exception as e:
+            return {"status": "error", "message": f"Failed to run tests. Error: {str(e)}"}
+
+    def generate_flinn_engdahl_region(self, latitude, longitude):
+        """
+        Generate Flinn-Engdahl region names for given coordinates.
+
+        Args:
+            latitude (float): Latitude of the location.
+            longitude (float): Longitude of the location.
+
+        Returns:
+            dict: A dictionary containing the status and the region name or error message.
+        """
+        try:
+            region = flinnengdahl(latitude, longitude)
+            return {"status": "success", "region": region}
+        except Exception as e:
+            return {"status": "error", "message": f"Failed to generate Flinn-Engdahl region. Error: {str(e)}"}
+
+    def rescue_reftek_data(self, input_file, output_dir):
+        """
+        Rescue data from Reftek files.
+
+        Args:
+            input_file (str): Path to the Reftek file.
+            output_dir (str): Directory to save the rescued data.
+
+        Returns:
+            dict: A dictionary containing the status and any error messages.
+        """
+        try:
+            reftekrescue(input_file, output_dir)
+            return {"status": "success", "message": "Reftek data rescued successfully."}
+        except Exception as e:
+            return {"status": "error", "message": f"Failed to rescue Reftek data. Error: {str(e)}"}
+
+    def generate_sds_html_report(self, sds_path, output_file):
+        """
+        Generate an HTML report for SDS archives.
+
+        Args:
+            sds_path (str): Path to the SDS archive.
+            output_file (str): Path to save the HTML report.
+
+        Returns:
+            dict: A dictionary containing the status and any error messages.
+        """
+        try:
+            sds_html_report(sds_path, output_file)
+            return {"status": "success", "message": "SDS HTML report generated successfully."}
+        except Exception as e:
+            return {"status": "error", "message": f"Failed to generate SDS HTML report. Error: {str(e)}"}
+
+    # -------------------------------------------------------------------------
+    # Module: Core
     # -------------------------------------------------------------------------
 
     def create_stream(self, traces=None):
         """
-        Create an instance of the Stream class.
+        Create an ObsPy Stream object.
 
-        Parameters:
-            traces (list): List of Trace objects to initialize the Stream.
+        Args:
+            traces (list): List of Trace objects to include in the Stream.
 
         Returns:
-            dict: A dictionary containing the status and the Stream instance.
+            dict: A dictionary containing the status and the Stream object or error message.
         """
         try:
             stream = Stream(traces=traces)
             return {"status": "success", "stream": stream}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to create Stream: {str(e)}"}
+            return {"status": "error", "message": f"Failed to create Stream object. Error: {str(e)}"}
 
     def create_trace(self, data, header=None):
         """
-        Create an instance of the Trace class.
+        Create an ObsPy Trace object.
 
-        Parameters:
+        Args:
             data (numpy.ndarray): Time series data.
             header (dict): Metadata for the Trace.
 
         Returns:
-            dict: A dictionary containing the status and the Trace instance.
+            dict: A dictionary containing the status and the Trace object or error message.
         """
         try:
             trace = Trace(data=data, header=header)
             return {"status": "success", "trace": trace}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to create Trace: {str(e)}"}
+            return {"status": "error", "message": f"Failed to create Trace object. Error: {str(e)}"}
 
     def create_utcdatetime(self, time_string):
         """
-        Create an instance of the UTCDateTime class.
+        Create an ObsPy UTCDateTime object.
 
-        Parameters:
-            time_string (str): Time string to initialize the UTCDateTime.
+        Args:
+            time_string (str): Time string to initialize the UTCDateTime object.
 
         Returns:
-            dict: A dictionary containing the status and the UTCDateTime instance.
+            dict: A dictionary containing the status and the UTCDateTime object or error message.
         """
         try:
             utc_datetime = UTCDateTime(time_string)
             return {"status": "success", "utc_datetime": utc_datetime}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to create UTCDateTime: {str(e)}"}
+            return {"status": "error", "message": f"Failed to create UTCDateTime object. Error: {str(e)}"}
 
     def create_event(self, **kwargs):
         """
-        Create an instance of the Event class.
+        Create an ObsPy Event object.
 
-        Parameters:
-            kwargs (dict): Event metadata.
+        Args:
+            **kwargs: Metadata for the Event.
 
         Returns:
-            dict: A dictionary containing the status and the Event instance.
+            dict: A dictionary containing the status and the Event object or error message.
         """
         try:
             event = Event(**kwargs)
             return {"status": "success", "event": event}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to create Event: {str(e)}"}
+            return {"status": "error", "message": f"Failed to create Event object. Error: {str(e)}"}
 
     def create_catalog(self, events=None):
         """
-        Create an instance of the Catalog class.
+        Create an ObsPy Catalog object.
 
-        Parameters:
-            events (list): List of Event objects to initialize the Catalog.
+        Args:
+            events (list): List of Event objects to include in the Catalog.
 
         Returns:
-            dict: A dictionary containing the status and the Catalog instance.
+            dict: A dictionary containing the status and the Catalog object or error message.
         """
         try:
             catalog = Catalog(events=events)
             return {"status": "success", "catalog": catalog}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to create Catalog: {str(e)}"}
+            return {"status": "error", "message": f"Failed to create Catalog object. Error: {str(e)}"}
 
     def create_inventory(self, networks=None, source=None):
         """
-        Create an instance of the Inventory class.
+        Create an ObsPy Inventory object.
 
-        Parameters:
-            networks (list): List of Network objects.
-            source (str): Source of the inventory.
+        Args:
+            networks (list): List of Network objects to include in the Inventory.
+            source (str): Source of the Inventory.
 
         Returns:
-            dict: A dictionary containing the status and the Inventory instance.
+            dict: A dictionary containing the status and the Inventory object or error message.
         """
         try:
             inventory = Inventory(networks=networks, source=source)
             return {"status": "success", "inventory": inventory}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to create Inventory: {str(e)}"}
+            return {"status": "error", "message": f"Failed to create Inventory object. Error: {str(e)}"}
 
     # -------------------------------------------------------------------------
-    # Signal Processing
+    # Module: Signal Processing
     # -------------------------------------------------------------------------
 
-    def apply_lanczos_interpolation(self, data, new_sampling_rate, method="linear"):
+    def apply_lanczos_interpolation(self, data, factor):
         """
         Apply Lanczos interpolation to the given data.
 
-        Parameters:
+        Args:
             data (numpy.ndarray): Input data for interpolation.
-            new_sampling_rate (float): Desired sampling rate.
-            method (str): Interpolation method (default is 'linear').
+            factor (int): Interpolation factor.
 
         Returns:
-            dict: A dictionary containing the status and the interpolated data.
+            dict: A dictionary containing the status and the interpolated data or error message.
         """
         try:
-            interpolated_data = lanczos_interpolation(data, new_sampling_rate, method=method)
+            interpolated_data = lanczos_interpolation(data, factor)
             return {"status": "success", "interpolated_data": interpolated_data}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to apply Lanczos interpolation: {str(e)}"}
+            return {"status": "error", "message": f"Failed to apply Lanczos interpolation. Error: {str(e)}"}
 
     def apply_classic_sta_lta(self, data, nsta, nlta):
         """
-        Apply classic STA/LTA algorithm to the given data.
+        Apply classic STA/LTA algorithm to detect seismic events.
 
-        Parameters:
-            data (numpy.ndarray): Input data for STA/LTA calculation.
+        Args:
+            data (numpy.ndarray): Input time series data.
             nsta (int): Number of samples for the short-term average.
             nlta (int): Number of samples for the long-term average.
 
         Returns:
-            dict: A dictionary containing the status and the STA/LTA result.
+            dict: A dictionary containing the status and the STA/LTA result or error message.
         """
         try:
             result = classic_sta_lta(data, nsta, nlta)
-            return {"status": "success", "sta_lta_result": result}
+            return {"status": "success", "result": result}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to apply classic STA/LTA: {str(e)}"}
+            return {"status": "error", "message": f"Failed to apply classic STA/LTA algorithm. Error: {str(e)}"}
 
     def apply_recursive_sta_lta(self, data, nsta, nlta):
         """
-        Apply recursive STA/LTA algorithm to the given data.
+        Apply recursive STA/LTA algorithm to detect seismic events.
 
-        Parameters:
-            data (numpy.ndarray): Input data for STA/LTA calculation.
+        Args:
+            data (numpy.ndarray): Input time series data.
             nsta (int): Number of samples for the short-term average.
             nlta (int): Number of samples for the long-term average.
 
         Returns:
-            dict: A dictionary containing the status and the STA/LTA result.
+            dict: A dictionary containing the status and the STA/LTA result or error message.
         """
         try:
             result = recursive_sta_lta(data, nsta, nlta)
-            return {"status": "success", "sta_lta_result": result}
+            return {"status": "success", "result": result}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to apply recursive STA/LTA: {str(e)}"}
-
-    def detect_trigger_onset(self, sta_lta_result, threshold_on, threshold_off):
-        """
-        Detect trigger onset using STA/LTA results.
-
-        Parameters:
-            sta_lta_result (numpy.ndarray): STA/LTA result.
-            threshold_on (float): Trigger on threshold.
-            threshold_off (float): Trigger off threshold.
-
-        Returns:
-            dict: A dictionary containing the status and the detected triggers.
-        """
-        try:
-            triggers = trigger_onset(sta_lta_result, threshold_on, threshold_off)
-            return {"status": "success", "triggers": triggers}
-        except Exception as e:
-            return {"status": "error", "message": f"Failed to detect trigger onset: {str(e)}"}
+            return {"status": "error", "message": f"Failed to apply recursive STA/LTA algorithm. Error: {str(e)}"}
 
     def apply_bandpass_filter(self, data, freqmin, freqmax, df, corners=4, zerophase=False):
         """
         Apply a bandpass filter to the given data.
 
-        Parameters:
-            data (numpy.ndarray): Input data for filtering.
-            freqmin (float): Minimum frequency.
-            freqmax (float): Maximum frequency.
-            df (float): Sampling rate.
-            corners (int): Number of corners for the filter (default is 4).
-            zerophase (bool): Apply zero-phase filtering (default is False).
+        Args:
+            data (numpy.ndarray): Input time series data.
+            freqmin (float): Minimum frequency of the bandpass filter.
+            freqmax (float): Maximum frequency of the bandpass filter.
+            df (float): Sampling rate of the data.
+            corners (int): Number of corners for the filter.
+            zerophase (bool): Whether to apply a zero-phase filter.
 
         Returns:
-            dict: A dictionary containing the status and the filtered data.
+            dict: A dictionary containing the status and the filtered data or error message.
         """
         try:
-            filtered_data = bandpass(data, freqmin, freqmax, df, corners=corners, zerophase=zerophase)
+            filtered_data = bandpass(data, freqmin, freqmax, df, corners, zerophase)
             return {"status": "success", "filtered_data": filtered_data}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to apply bandpass filter: {str(e)}"}
+            return {"status": "error", "message": f"Failed to apply bandpass filter. Error: {str(e)}"}
 
     # -------------------------------------------------------------------------
-    # Travel Time Calculation
-    # -------------------------------------------------------------------------
-
-    def calculate_travel_times(self, source_depth_in_km, distance_in_degree, phase_list=None):
-        """
-        Calculate travel times for seismic phases.
-
-        Parameters:
-            source_depth_in_km (float): Depth of the seismic source in kilometers.
-            distance_in_degree (float): Distance in degrees.
-            phase_list (list): List of seismic phases to calculate travel times for.
-
-        Returns:
-            dict: A dictionary containing the status and the travel times.
-        """
-        try:
-            travel_times = get_travel_times(source_depth_in_km, distance_in_degree, phase_list=phase_list)
-            return {"status": "success", "travel_times": travel_times}
-        except Exception as e:
-            return {"status": "error", "message": f"Failed to calculate travel times: {str(e)}"}
-
-    # -------------------------------------------------------------------------
-    # Data I/O
-    # -------------------------------------------------------------------------
-
-    def read_waveform_data(self, file_path):
-        """
-        Read waveform data from a MiniSEED file.
-
-        Parameters:
-            file_path (str): Path to the MiniSEED file.
-
-        Returns:
-            dict: A dictionary containing the status and the Stream object.
-        """
-        try:
-            stream = read_mseed(file_path)
-            return {"status": "success", "stream": stream}
-        except Exception as e:
-            return {"status": "error", "message": f"Failed to read waveform data: {str(e)}"}
-
-    def read_station_metadata(self, file_path):
-        """
-        Read station metadata from a StationXML file.
-
-        Parameters:
-            file_path (str): Path to the StationXML file.
-
-        Returns:
-            dict: A dictionary containing the status and the Inventory object.
-        """
-        try:
-            inventory = read_stationxml(file_path)
-            return {"status": "success", "inventory": inventory}
-        except Exception as e:
-            return {"status": "error", "message": f"Failed to read station metadata: {str(e)}"}
-
-    def read_event_data(self, file_path):
-        """
-        Read seismic event data from a QuakeML file.
-
-        Parameters:
-            file_path (str): Path to the QuakeML file.
-
-        Returns:
-            dict: A dictionary containing the status and the Catalog object.
-        """
-        try:
-            catalog = read_events(file_path)
-            return {"status": "success", "catalog": catalog}
-        except Exception as e:
-            return {"status": "error", "message": f"Failed to read event data: {str(e)}"}
-
-    # -------------------------------------------------------------------------
-    # Client Interfaces
+    # Module: Client Interfaces
     # -------------------------------------------------------------------------
 
     def create_fdsn_client(self, base_url=None):
         """
-        Create an instance of the FDSN Client.
+        Create an FDSN client to access remote data centers.
 
-        Parameters:
+        Args:
             base_url (str): Base URL of the FDSN web service (optional).
 
         Returns:
-            dict: A dictionary containing the status and the Client instance.
+            dict: A dictionary containing the status and the Client object or error message.
         """
         try:
             client = Client(base_url=base_url)
             return {"status": "success", "client": client}
         except Exception as e:
-            return {"status": "error", "message": f"Failed to create FDSN Client: {str(e)}"}
+            return {"status": "error", "message": f"Failed to create FDSN client. Error: {str(e)}"}
+
+    # -------------------------------------------------------------------------
+    # Module: TauPy
+    # -------------------------------------------------------------------------
+
+    def create_taup_model(self, model_name):
+        """
+        Create a TauPyModel for seismic travel time calculations.
+
+        Args:
+            model_name (str): Name of the velocity model (e.g., 'iasp91', 'ak135').
+
+        Returns:
+            dict: A dictionary containing the status and the TauPyModel object or error message.
+        """
+        try:
+            model = TauPyModel(model=model_name)
+            return {"status": "success", "model": model}
+        except Exception as e:
+            return {"status": "error", "message": f"Failed to create TauPyModel. Error: {str(e)}"}

@@ -1,0 +1,33 @@
+{
+  "earthquake_analysis_report": {
+    "generated_at": "2025-09-28T04:24:56.830898Z",
+    "analysis_summary": {
+      "scenario_title": "P-wave Analysis with Real Seismic Data",
+      "data_type": "P-wave",
+      "earthquake_info": {
+        "origin_time": "2024-03-15T14:28:33.5Z",
+        "latitude": 35.7749,
+        "longitude": -122.4194,
+        "depth_km": 12.3,
+        "magnitude": 5.2,
+        "magnitude_type": "ML",
+        "region": "San Francisco Bay Area",
+        "station_distance_km": 85.2
+      },
+      "waveform_analysis": {
+        "sampling_rate": 100,
+        "data_points": 3000,
+        "duration": 30.0
+      },
+      "llm_analysis": "The earthquake's origin time has been successfully converted to an ObsPy `UTCDateTime` object: 2024-03-15T14:28:33.500000Z. Now, let's proceed with the analysis workflow.\n\n### Step 1: Create ObsPy Trace Objects\nPlease provide the seismic waveform data arrays (e.g., amplitude values over time) so I can create the ObsPy `Trace` objects for analysis.",
+      "processing_timestamp": "20250928_122456"
+    },
+    "data_processing": {
+      "tools_used": [
+        "ObsPy",
+        "FastMCP"
+      ],
+      "analysis_type": "Seismic waveform and event analysis"
+    }
+  }
+}

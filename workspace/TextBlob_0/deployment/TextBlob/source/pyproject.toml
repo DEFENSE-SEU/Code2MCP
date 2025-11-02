@@ -1,0 +1,102 @@
+[project]
+name = "textblob"
+version = "0.19.0"
+description = "Simple, Pythonic text processing. Sentiment analysis, part-of-speech tagging, noun phrase parsing, and more."
+readme = "README.rst"
+license = { file = "LICENSE" }
+authors = [{ name = "Steven Loria", email = "sloria1@gmail.com" }]
+classifiers = [
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Text Processing :: Linguistic",
+]
+keywords = ["textblob", "nlp", 'linguistics', 'nltk', 'pattern']
+requires-python = ">=3.9"
+dependencies = ["nltk>=3.9"]
+
+[project.urls]
+Changelog = "https://textblob.readthedocs.io/en/latest/changelog.html"
+Issues = "https://github.com/sloria/TextBlob/issues"
+Source = "https://github.com/sloria/TextBlob"
+
+[project.optional-dependencies]
+docs = ["sphinx==8.2.3", "sphinx-issues==5.0.1", "PyYAML==6.0.3"]
+tests = ["pytest", "numpy"]
+dev = ["textblob[tests]", "tox", "pre-commit>=3.5,<5.0", "pyright", "ruff"]
+
+[build-system]
+requires = ["flit_core<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.sdist]
+include = ["tests/", "CHANGELOG.rst", "CONTRIBUTING.rst", "tox.ini", "NOTICE"]
+
+[tool.ruff]
+src = ["src"]
+fix = true
+show-fixes = true
+unsafe-fixes = true
+exclude = [
+  # Default excludes from ruff
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".git-rewrite",
+  ".hg",
+  ".ipynb_checkpoints",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".pyenv",
+  ".pytest_cache",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  ".vscode",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "node_modules",
+  "site-packages",
+  "venv",
+  # Vendorized code
+  "src/textblob/en",
+  "src/textblob/_text.py",
+]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = [
+  "B",  # flake8-bugbear
+  "E",  # pycodestyle error
+  "F",  # pyflakes
+  "I",  # isort
+  "UP", # pyupgrade
+  "W",  # pycodestyle warning
+  "TC", # flake8-typechecking
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E721"]
+
+[tool.pytest.ini_options]
+markers = [
+  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "numpy: marks tests that require numpy",
+]
+
+[tool.pyright]
+include = ["src/**", "tests/**"]

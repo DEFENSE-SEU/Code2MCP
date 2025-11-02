@@ -1,19 +1,13 @@
-fastmcp>=0.1.0
+fastmcp
+fastapi
+uvicorn[standard]
 pydantic>=2.0.0
-numpy
-scipy
-matplotlib
+numpy>=1.20
+scipy>=1.7
+matplotlib>=3.3
 lxml
-sqlalchemy
-future
+setuptools
+sqlalchemy>=1.4
 decorator
 requests
-setuptools
-
-# Optional Dependencies
-# cartopy
-# pyproj
-# h5py
-# pandas
-# pytest
-# sphinx
+future

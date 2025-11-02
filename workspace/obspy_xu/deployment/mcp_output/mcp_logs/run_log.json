@@ -1,0 +1,75 @@
+{
+  "timestamp": 1759026537.9409459,
+  "node": "RunNode",
+  "test_result": {
+    "passed": false,
+    "report_path": null,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n  File \"/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/start_mcp.py\", line 17, in <module>\n    from mcp_service import create_app\n  File \"/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/mcp_plugin/mcp_service.py\", line 8, in <module>\n    from fastmcp import FastMCP\nModuleNotFoundError: No module named 'fastmcp'\n\nERROR conda.cli.main_run:execute(49): `conda run python mcp_output/start_mcp.py` failed. (See above for error)\n"
+  },
+  "run_result": {
+    "success": false,
+    "test_passed": false,
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n  File \"/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/start_mcp.py\", line 17, in <module>\n    from mcp_service import create_app\n  File \"/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/mcp_plugin/mcp_service.py\", line 8, in <module>\n    from fastmcp import FastMCP\nModuleNotFoundError: No module named 'fastmcp'\n\nERROR conda.cli.main_run:execute(49): `conda run python mcp_output/start_mcp.py` failed. (See above for error)\n",
+    "timestamp": 1759026537.9409049,
+    "error_type": "ImportError",
+    "error": "Module import failed: Traceback (most recent call last):\n  File \"/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/start_mcp.py\", line 17, in <module>\n    from mcp_service import create_app\n  File \"/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/mcp_plugin/mcp_service.py\", line 8, in <module>\n    from fastmcp import FastMCP\nModuleNotFoundError: No module named 'fastmcp'\n\nERROR conda.cli.main_run:execute(49): `conda run python mcp_output/start_mcp.py` failed. (See above for error)\n",
+    "details": {
+      "command": "/Users/yuanxujie/opt/anaconda3/bin/conda run -n obspy_026400_env --cwd /Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy python mcp_output/start_mcp.py",
+      "working_directory": "/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy",
+      "environment_type": "conda"
+    }
+  },
+  "environment": {
+    "type": "conda",
+    "name": "obspy_026400_env",
+    "files": {
+      "pyproject_toml": "/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/source/pyproject.toml"
+    },
+    "python": "3.10",
+    "exec_prefix": []
+  },
+  "plugin_info": {
+    "files": {
+      "mcp_output/start_mcp.py": "/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/start_mcp.py",
+      "mcp_output/mcp_plugin/__init__.py": "/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/mcp_plugin/__init__.py",
+      "mcp_output/mcp_plugin/mcp_service.py": "/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/mcp_plugin/mcp_service.py",
+      "mcp_output/mcp_plugin/adapter.py": "/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/mcp_plugin/adapter.py",
+      "mcp_output/mcp_plugin/main.py": "/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/mcp_plugin/main.py",
+      "mcp_output/requirements.txt": "/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/requirements.txt",
+      "mcp_output/README_MCP.md": "/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/README_MCP.md",
+      "mcp_output/tests_mcp/test_mcp_basic.py": "/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/tests_mcp/test_mcp_basic.py"
+    },
+    "adapter_mode": "import",
+    "endpoints": [
+      "get_waveforms",
+      "get_metadata",
+      "earthwormclient",
+      "get_events",
+      "get_stations",
+      "get_waveforms",
+      "client",
+      "read",
+      "write",
+      "filter",
+      "stream",
+      "trace",
+      "bandpass",
+      "lowpass",
+      "highpass",
+      "get_travel_times",
+      "taupymodel"
+    ],
+    "mcp_dir": "/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/mcp_plugin",
+    "tests_dir": "/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/tests_mcp",
+    "main_entry": "start_mcp.py",
+    "readme_path": "/Users/yuanxujie/Downloads/Easy-Tool/MCP-agent-github-repo-output/workspace/obspy/mcp_output/README_MCP.md",
+    "requirements": [
+      "fastmcp>=0.1.0",
+      "pydantic>=2.0.0"
+    ]
+  },
+  "fastmcp_installed": false
+}

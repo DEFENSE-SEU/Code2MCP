@@ -832,28 +832,120 @@ class Adapter:
 """
     return content
 
-def _generate_requirements_txt(analysis_result: Dict[str, Any]) -> str:
+def _generate_requirements_txt(analysis_result: Dict[str, Any], repo_root: str) -> str:
+    import os
+    from pathlib import Path
+    reqs: list[str] = []
+    def add_line(line: str):
+        s = (line or "").strip()
+        if not s or s.startswith('#'):
+            return
+        if s.lower().startswith('python'):
+            return
+        if s not in reqs:
+            reqs.append(s)
+
+    add_line("fastmcp")
+    add_line("fastapi")
+    add_line("uvicorn[standard]")
+    add_line("pydantic>=2.0.0")
+
+    root = Path(repo_root)
+    src = root / "source"
+
+    def read_lines(p: Path):
+        try:
+            for ln in p.read_text(encoding="utf-8", errors="ignore").splitlines():
+                add_line(ln)
+        except Exception:
+            pass
+
+    for p in [root / "requirements.txt", src / "requirements.txt"]:
+        if p.exists():
+            read_lines(p)
+
+    # pyproject.toml dependencies
+    for p in [root / "pyproject.toml", src / "pyproject.toml"]:
+        if p.exists():
+            try:
+                try:
+                    import tomllib as _toml  # type: ignore
+                except Exception:
+                    import tomli as _toml  # type: ignore
+                with open(p, "rb") as fp:
+                    data = _toml.load(fp)
+                for item in (data.get("project", {}).get("dependencies", []) or []):
+                    add_line(item)
+            except Exception:
+                try:
+                    text = p.read_text(encoding="utf-8", errors="ignore")
+                    import re
+                    m = re.search(r"\[project\][\s\S]*?dependencies\s*=\s*\[(.*?)\]", text, re.IGNORECASE | re.DOTALL)
+                    if m:
+                        body = m.group(1)
+                        for item in re.findall(r"\"([^\"]+)\"", body):
+                            add_line(item)
+                except Exception:
+                    pass
+
+    # setup.cfg install_requires
+    for p in [root / "setup.cfg", src / "setup.cfg"]:
+        if p.exists():
+            try:
+                text = p.read_text(encoding="utf-8", errors="ignore")
+                import re
+                m = re.search(r"\[options\][\s\S]*?install_requires\s*=\s*(.*?)\n\[", text + "\n[", re.IGNORECASE | re.DOTALL)
+                if m:
+                    block = m.group(1)
+                    for ln in block.splitlines():
+                        add_line(ln)
+            except Exception:
+                pass
+
+    # setup.py install_requires
+    for p in [root / "setup.py", src / "setup.py"]:
+        if p.exists():
+            try:
+                text = p.read_text(encoding="utf-8", errors="ignore")
+                import re
+                m = re.search(r"install_requires\s*=\s*\[(.*?)\]", text, re.IGNORECASE | re.DOTALL)
+                if m:
+                    body = m.group(1)
+                    for a, b in re.findall(r"\"([^\"]+)\"|'([^']+)'", body):
+                        add_line(a or b)
+            except Exception:
+                pass
+
+    # environment.yml pip deps
+    for p in [root / "environment.yml", src / "environment.yml"]:
+        if p.exists():
+            try:
+                import yaml  # type: ignore
+                data = yaml.safe_load(p.read_text(encoding="utf-8", errors="ignore")) or {}
+                for d in data.get("dependencies", []) or []:
+                    if isinstance(d, dict) and "pip" in d:
+                        for pkg in d.get("pip", []) or []:
+                            add_line(pkg)
+            except Exception:
+                pass
+
+    # merge LLM detected dependencies
     llm_analysis = analysis_result.get("llm_analysis", {})
     dependencies = llm_analysis.get("dependencies", {})
-    
-    required = dependencies.get("required", [])
-    optional = dependencies.get("optional", [])
-    
-    content = """fastmcp>=0.1.0
-pydantic>=2.0.0
-"""
-    
-    for dep in required:
+    for dep in (dependencies.get("required", []) or []):
         if dep and isinstance(dep, str):
-            content += f"{dep}\n"
-    
-    if optional:
-        content += "\n# Optional Dependencies\n"
-        for dep in optional:
-            if dep and isinstance(dep, str):
-                content += f"# {dep}\n"
-    
-    return content
+            add_line(dep)
+
+    # de-duplicate by package key
+    seen = set()
+    ordered: list[str] = []
+    for r in reqs:
+        key = r.split('==')[0].split('>=')[0].strip().lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        ordered.append(r)
+    return "\n".join(ordered) + "\n"
 
 
 def _generate_readme_mcp(analysis_result: Dict[str, Any], loop_summary: Dict[str, Any] | None = None) -> str:
@@ -1182,9 +1274,8 @@ if __name__ == "__main__":
     files["mcp_output/mcp_plugin/main.py"] = main_path
     
     req_path = os.path.join(mcp_output_dir, "requirements.txt")
-    if not os.path.exists(req_path):
-        write_file(req_path, _generate_requirements_txt(analysis))
-        files["mcp_output/requirements.txt"] = req_path
+    write_file(req_path, _generate_requirements_txt(analysis, repo_root))
+    files["mcp_output/requirements.txt"] = req_path
     
     readme_path = os.path.join(mcp_output_dir, "README_MCP.md")
     analysis["repository_name"] = repo.get("name", "unknown")
