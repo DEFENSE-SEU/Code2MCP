@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 ![Github stars](https://img.shields.io/github/stars/DEFENSE-SEU/Code2MCP.svg)
 
-[Chaoqian Ouyang (欧阳超前)*](https://xushengxianggg.github.io/)<img src="figs/SYSU.png" alt="Logo" width="20">, &nbsp; &nbsp; 
+[Chaoqian Ouyang (欧阳超前)*](https://scholar.google.com/citations?user=w_WGwkwAAAAJ&hl=en)<img src="figs/SYSU.png" alt="Logo" width="20">, &nbsp; &nbsp; 
 [Ling YUE (岳凌)*](https://scholar.google.com/citations?user=EhgyJeYAAAAJ&hl=en)<img src="figs/RPI.png" alt="Logo" width="20">, &nbsp; &nbsp; 
 [Shimin Di (邸世民)](https://sdiaa.github.io/)✉<img src="figs/SEU.png" alt="Logo" width="20">, &nbsp; &nbsp; 
 [Libin Zheng (郑立彬)](https://libinzheng.github.io/)✉<img src="figs/SYSU.png" alt="Logo" width="20">, &nbsp; &nbsp; 
