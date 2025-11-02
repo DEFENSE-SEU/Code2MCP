@@ -1,7 +1,25 @@
-# Code2MCP
+<div align="center">
+   
+# Code2MCP: Transforming Code Repositories into MCP Services
 ![Official Repository](https://img.shields.io/badge/Repo-Official-green?style=flat-square)
 [![arXiv](https://img.shields.io/badge/arXiv-2509.05941-b31b1b.svg?style=flat-square)](https://arxiv.org/abs/2509.05941)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+![Github stars](https://img.shields.io/github/stars/DEFENSE-SEU/Code2MCP.svg)
+
+[Chaoqian Ouyang (欧阳超前)*](https://xushengxianggg.github.io/)<img src="figs/SYSU.png" alt="Logo" width="20">, &nbsp; &nbsp; 
+[Ling YUE (岳凌)*](https://scholar.google.com/citations?user=EhgyJeYAAAAJ&hl=en)<img src="figs/RPI.png" alt="Logo" width="20">, &nbsp; &nbsp; 
+[Shimin Di (邸世民)](https://sdiaa.github.io/)✉<img src="figs/SEU.png" alt="Logo" width="20">, &nbsp; &nbsp; 
+[Libin Zheng (郑立彬)](https://libinzheng.github.io/)✉<img src="figs/SYSU.png" alt="Logo" width="20">, &nbsp; &nbsp; 
+
+[Linan Yue (岳立楠)](https://yuelinan.github.io/)<img src="figs/SEU.png" alt="Logo" width="20">, &nbsp; &nbsp; 
+[Shaowu Pan (潘韶武)](https://www.shaowupan.com/)<img src="figs/RPI.png" alt="Logo" width="20">, &nbsp; &nbsp; 
+[Jian Yin (印鉴)](https://sai.sysu.edu.cn/teacher/225)<img src="figs/SYSU.png" alt="Logo" width="20">, &nbsp; &nbsp; 
+[Min-Ling Zhang (张敏灵)](https://palm.seu.edu.cn/zhangml/)<img src="figs/SEU.png" alt="Logo" width="20">, &nbsp; &nbsp; 
+
+\* *Equal Contribution*
+✉ *Corresponding Author*
+
+</div>
 
 ## Project Overview
 
