@@ -1,3 +1,0 @@
-LIBRARY libsegy.dll
-EXPORTS
-    ibm2ieee
