@@ -5,7 +5,7 @@ import time
 import os
 from typing import Dict, Any, Optional, List
 from openai import OpenAI
-from ..utils import setup_logging
+from ..utils import setup_logging, clean_env_value
 
 logger = setup_logging("INFO")
 
@@ -17,16 +17,16 @@ class DeepWikiClient:
         
         if not api_key:
             if "deepseek" in model.lower():
-                api_key = os.getenv("DEEPSEEK_API_KEY")
+                api_key = clean_env_value(os.getenv("DEEPSEEK_API_KEY"))
                 base_url = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
             elif "qwen" in model.lower():
-                api_key = os.getenv("QWEN_API_KEY")
+                api_key = clean_env_value(os.getenv("QWEN_API_KEY"))
                 base_url = os.getenv("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
             elif "claude" in model.lower():
-                api_key = os.getenv("CLAUDE_API_KEY")
+                api_key = clean_env_value(os.getenv("CLAUDE_API_KEY"))
                 base_url = os.getenv("CLAUDE_BASE_URL", "https://api.anthropic.com")
             else:
-                api_key = os.getenv("OPENAI_API_KEY")
+                api_key = clean_env_value(os.getenv("OPENAI_API_KEY"))
                 base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
         else:
             if "deepseek" in model.lower():
@@ -49,7 +49,9 @@ class DeepWikiClient:
         
         logger.info(f"DeepWikiClient initialized: model={model}, client_type={self.client_type}, api_key_set={bool(api_key)}")
         
-        if "claude" in model.lower():
+        if not api_key:
+            self.client = None
+        elif "claude" in model.lower():
             try:
                 from anthropic import Anthropic
                 self.client = Anthropic(api_key=api_key)
@@ -98,6 +100,14 @@ class DeepWikiClient:
     
     def _fallback_analysis(self, question: str) -> Dict[str, Any]:
         try:
+            if not self.client:
+                return {
+                    "success": False,
+                    "error": f"{self.client_type} API key not set",
+                    "question": question,
+                    "model": self.model,
+                    "suggestion": "Set the matching API key or disable DeepWiki analysis",
+                }
             if self.client_type == "anthropic":
                 resp = self.client.messages.create(
                     model=self.model,
@@ -300,6 +310,15 @@ class DeepWikiClient:
     
     def analyze_repository(self, repo_url: str, repo_name: str) -> Dict[str, Any]:
         try:
+            if not self.api_key:
+                return {
+                    "repo_url": repo_url,
+                    "repo_name": repo_name,
+                    "status": "skipped",
+                    "reason": f"{self.client_type} API key not set",
+                    "model": self.model,
+                    "success": False,
+                }
             logger.info(f"Starting repository analysis {repo_name} ({repo_url})")
             
             repo_owner = repo_url.split('/')[-2]
