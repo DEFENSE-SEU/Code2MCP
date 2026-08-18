@@ -1,163 +1,92 @@
 #!/usr/bin/env python3
-import os
-import sys
-import json
-import subprocess
+from __future__ import annotations
+
 import argparse
+import json
+import sys
 from pathlib import Path
-import platform
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.tools.quick_connect import QuickConnectError, connect_agent
+from src.utils import redact_sensitive_data, redact_sensitive_text
 
 
-def get_cursor_config_path():
-    base_dir = Path.home() / ".cursor"
-    
-    for config_name in ["mcp_settings.json", "mcp.json"]:
-        config_path = base_dir / config_name
-        if config_path.exists():
-            return config_path
-    
-    return base_dir / "mcp_settings.json"
+CLIENT_CHOICES = [
+    "generic",
+    "cursor",
+    "claude",
+    "claude-code",
+    "claude-desktop",
+    "vscode",
+    "windsurf",
+    "cline",
+    "gemini",
+    "gemini-cli",
+    "chatgpt",
+    "gpt",
+    "openai",
+    "openai-api",
+    "responses-api",
+]
 
 
-def connect_cursor_remote(mcp_name, remote_url):
-    try:
-        config_path = get_cursor_config_path()
-        
-        if config_path.exists():
-            try:
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-            except (json.JSONDecodeError, PermissionError):
-                config = {"mcpServers": {}}
-        else:
-            config = {"mcpServers": {}}
-        
-        if "mcpServers" not in config:
-            config["mcpServers"] = {}
-        
-        config["mcpServers"][mcp_name] = {
-            "url": f"{remote_url.rstrip('/')}/mcp"
-        }
-        
-        config_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        with open(config_path, 'w', encoding='utf-8') as f:
-            json.dump(config, f, indent=2, ensure_ascii=False)
-        
-        return True
-    except (PermissionError, OSError):
-        return False
-
-
-def connect_cursor_local(mcp_name, project_dir):
-    try:
-        project_path = Path(project_dir).resolve()
-        start_mcp = project_path / "mcp_output" / "start_mcp.py"
-        
-        if not start_mcp.exists():
-            return False
-        
-        venv_paths = [
-            project_path / "mcp_output" / ".venv" / "bin" / "python",
-            project_path / "mcp_output" / ".venv" / "Scripts" / "python.exe",
-            project_path / ".venv" / "bin" / "python",
-            project_path / ".venv" / "Scripts" / "python.exe",
-        ]
-        
-        venv_python = "python"
-        for venv_path in venv_paths:
-            if venv_path.exists():
-                venv_python = str(venv_path.resolve())
-                break
-        
-        config_path = get_cursor_config_path()
-        
-        if config_path.exists():
-            try:
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-            except (json.JSONDecodeError, PermissionError):
-                config = {"mcpServers": {}}
-        else:
-            config = {"mcpServers": {}}
-        
-        if "mcpServers" not in config:
-            config["mcpServers"] = {}
-        
-        config["mcpServers"][mcp_name] = {
-            "command": venv_python,
-            "args": [str(start_mcp.resolve())]
-        }
-        
-        config_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        with open(config_path, 'w', encoding='utf-8') as f:
-            json.dump(config, f, indent=2, ensure_ascii=False)
-        
-        return True
-    except (PermissionError, OSError):
-        return False
-
-
-def connect_claude_remote(mcp_name, remote_url):
-    cmd = ["claude", "mcp", "add", "--transport", "http", mcp_name, f"{remote_url.rstrip('/')}/mcp"]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    return result.returncode == 0
-
-
-def connect_claude_local(mcp_name, project_dir):
-    project_path = Path(project_dir).resolve()
-    start_mcp = project_path / "mcp_output" / "start_mcp.py"
-    
-    if not start_mcp.exists():
-        return False
-    
-    venv_paths = [
-        project_path / "mcp_output" / ".venv" / "bin" / "python",
-        project_path / "mcp_output" / ".venv" / "Scripts" / "python.exe",
-        project_path / ".venv" / "bin" / "python",
-        project_path / ".venv" / "Scripts" / "python.exe",
-    ]
-    
-    venv_python = "python"
-    for venv_path in venv_paths:
-        if venv_path.exists():
-            venv_python = str(venv_path)
-            break
-    
-    cmd = ["fastmcp", "install", "claude-code", str(start_mcp), "--python", venv_python]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    return result.returncode == 0
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Connect MCP service")
-    parser.add_argument('--client', choices=['cursor', 'claude'], required=True)
-    parser.add_argument('--name', required=True)
-    parser.add_argument('--url')
-    parser.add_argument('--local', action='store_true')
-    parser.add_argument('--project')
-    
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Compatibility wrapper for generated MCP agent connection. "
+            "Prefer scripts/connect_agent.py for new usage."
+        )
+    )
+    parser.add_argument("--client", choices=CLIENT_CHOICES, required=True)
+    parser.add_argument("--name", help="MCP server name shown in the agent client")
+    parser.add_argument("--url", help="Remote MCP base URL, e.g. https://user-space.hf.space")
+    parser.add_argument("--local", action="store_true", help="Use local stdio config")
+    parser.add_argument("--project", required=True, help="Generated workspace repo root, e.g. workspace/demo")
+    parser.add_argument("--python", dest="python_executable", help="Python executable for local stdio mode")
+    parser.add_argument("--write", action="store_true", help="Write/install the client configuration")
+    parser.add_argument("--allow-unvalidated", action="store_true", help="Allow writing unvalidated services")
+    parser.add_argument(
+        "--probe-remote",
+        action="store_true",
+        help="Verify --url with a FastMCP client before marking remote payloads ready or writing remote config",
+    )
+    parser.add_argument(
+        "--remote-probe-timeout",
+        type=float,
+        default=10.0,
+        help="Seconds to wait for --probe-remote FastMCP client validation",
+    )
+    parser.add_argument("--config-path", help="Override client config path, currently supported for Cursor")
     args = parser.parse_args()
-    
-    if args.local:
-        if not args.project:
-            sys.exit(1)
-        if args.client == 'cursor':
-            success = connect_cursor_local(args.name, args.project)
-        else:
-            success = connect_claude_local(args.name, args.project)
-    else:
-        if not args.url:
-            sys.exit(1)
-        if args.client == 'cursor':
-            success = connect_cursor_remote(args.name, args.url)
-        else:
-            success = connect_claude_remote(args.name, args.url)
-    
-    sys.exit(0 if success else 1)
+
+    remote = bool(args.url and not args.local)
+    if remote is False and args.client in {"chatgpt", "gpt", "openai", "openai-api", "responses-api"}:
+        raise SystemExit("ChatGPT/OpenAI API clients require --url because they use remote HTTPS MCP.")
+
+    try:
+        result = connect_agent(
+            args.project,
+            client=args.client,
+            server_name=args.name,
+            remote_url=args.url,
+            python_executable=args.python_executable,
+            write=args.write,
+            allow_unvalidated=args.allow_unvalidated,
+            remote=remote,
+            config_path=args.config_path,
+            probe_remote=args.probe_remote,
+            remote_probe_timeout=args.remote_probe_timeout,
+        )
+    except QuickConnectError as exc:
+        print(json.dumps({"success": False, "error": redact_sensitive_text(str(exc))}, ensure_ascii=False, indent=2))
+        return 1
+
+    print(json.dumps(redact_sensitive_data(result), ensure_ascii=False, indent=2))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
-
+    raise SystemExit(main())
