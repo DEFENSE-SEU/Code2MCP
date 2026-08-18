@@ -1,0 +1,11 @@
+{
+  "total_calls": 4,
+  "failed_calls": 0,
+  "retry_count": 0,
+  "total_prompt_tokens": 14025,
+  "total_completion_tokens": 4791,
+  "total_tokens": 18816,
+  "average_prompt_tokens": 3506.25,
+  "average_completion_tokens": 1197.75,
+  "average_tokens": 4704.0
+}

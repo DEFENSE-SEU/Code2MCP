@@ -1,0 +1,15 @@
+{
+  "environment": {
+    "type": "conda",
+    "name": "Yade_669129_env",
+    "files": {},
+    "python": "3.10",
+    "exec_prefix": []
+  },
+  "original_tests": {
+    "passed": false,
+    "report_path": null
+  },
+  "timestamp": 1755669157.6592047,
+  "conda_available": true
+}

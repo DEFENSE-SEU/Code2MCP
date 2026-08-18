@@ -144,43 +144,6 @@ ENV/
 env.bak/
 venv.bak/
 
-# Local OAuth/Codex caches
-/auth.json
-/auth-profiles.json
-
-# Benchmark runtime outputs and local replay manifests
-/benchmark/
-/benchmark/repositories_resolved.json
-/benchmark/repositories_failed_resolution.json
-/benchmark/repositories_validated.csv
-/benchmark/manifest-*.json
-/benchmark/results.json
-/benchmark/results_*.json
-/benchmark/results-*.json
-/benchmark/benchmark_report.md
-/benchmark/benchmark_report_*.md
-/benchmark/benchmark_report-*.md
-/benchmark/logs/
-/benchmark/workflow_output/
-
-# Code2MCP runtime/generated artifacts
-/workspace/
-/output/
-/logs/
-**/mcp_output/
-**/deployment/
-**/*_venv/
-**/.venv/
-**/tests_smoke/
-run_log.json
-wordlog.txt
-llm_statistics.json
-workflow_summary.json
-env_info.json
-analysis.json
-code_review_results.json
-diff_report.md
-
 # Spyder project settings
 .spyderproject
 .spyproject

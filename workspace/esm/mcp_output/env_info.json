@@ -1,0 +1,17 @@
+{
+  "environment": {
+    "type": "conda",
+    "name": "esm_774629_env",
+    "files": {
+      "pyproject_toml": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\esm\\source\\pyproject.toml"
+    },
+    "python": "3.10",
+    "exec_prefix": []
+  },
+  "original_tests": {
+    "passed": true,
+    "report_path": null
+  },
+  "timestamp": 1755775471.7781281,
+  "conda_available": true
+}

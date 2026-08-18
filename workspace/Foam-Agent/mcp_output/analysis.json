@@ -1,0 +1,153 @@
+{
+  "summary": {
+    "repository_url": "https://github.com/csml-rpi/Foam-Agent",
+    "summary_text": "Repository: csml-rpi/Foam-Agent\nCommit: main\nFiles analyzed: 50+\n\nEstimated tokens: 150k+",
+    "file_tree": "...",
+    "content": {},
+    "processed_by": "gitingest",
+    "success": true
+  },
+  "structure": {
+    "packages": [
+      "source.src",
+      "source.src.nodes",
+      "source.database.foamgpt",
+      "source.database.script"
+    ]
+  },
+  "dependencies": {
+    "has_environment_yml": true,
+    "has_requirements_txt": false,
+    "pyproject": false,
+    "setup_cfg": false,
+    "setup_py": false
+  },
+  "entry_points": {
+    "imports": [],
+    "cli": [
+      {
+        "command": "foambench_main.py",
+        "description": "Main entry point for starting the Foam-Agent system."
+      }
+    ],
+    "modules": []
+  },
+  "llm_analysis": {
+    "core_modules": [
+      {
+        "package": "source.src.nodes",
+        "module": "architect_node",
+        "functions": [
+          "save_file"
+        ],
+        "description": "Defines a placeholder for a file-saving function."
+      },
+      {
+        "package": "source.src.nodes",
+        "module": "meshing_node",
+        "functions": [
+          "handle_custom_mesh",
+          "handle_gmsh_mesh",
+          "meshing_node"
+        ],
+        "description": "Handles different mesh generation scenarios based on user requirements, including custom meshes and GMSH-based generation."
+      },
+      {
+        "package": "source.src.nodes",
+        "module": "input_writer_node",
+        "functions": [
+          "input_writer_node"
+        ],
+        "description": "Generates and rewrites OpenFOAM input files based on the specified mode (initial write or rewrite)."
+      },
+      {
+        "package": "source.src.nodes",
+        "module": "local_runner_node",
+        "functions": [
+          "local_runner_node"
+        ],
+        "description": "Executes the Allrun script for the simulation case and checks for errors."
+      },
+      {
+        "package": "source.src.nodes",
+        "module": "reviewer_node",
+        "functions": [
+          "reviewer_node"
+        ],
+        "description": "Reviews error logs from simulation runs and provides analysis and suggestions for fixes."
+      },
+      {
+        "package": "source.src.nodes",
+        "module": "visualization_node",
+        "functions": [
+          "visualization_node"
+        ],
+        "description": "Generates PyVista visualizations from successfully completed OpenFOAM cases."
+      },
+      {
+        "package": "source.src",
+        "module": "utils",
+        "classes": [
+          "LLMService",
+          "GraphState"
+        ],
+        "functions": [
+          "retrieve_faiss",
+          "run_command",
+          "check_foam_errors"
+        ],
+        "description": "Provides core utility functions and classes for the system, including the LLM service wrapper, state management, and file/command operations."
+      }
+    ],
+    "cli_commands": [
+      {
+        "command": "foambench_main.py",
+        "description": "Main entry point for starting the Foam-Agent system."
+      }
+    ],
+    "import_strategy": {
+      "primary": "import",
+      "fallback": "cli",
+      "confidence": 0.8
+    },
+    "dependencies": {
+      "required": [
+        "langchain",
+        "faiss-cpu",
+        "langchain-openai",
+        "langchain-aws",
+        "langchain-anthropic",
+        "pydantic",
+        "boto3",
+        "requests",
+        "pyyaml",
+        "numpy",
+        "matplotlib",
+        "pyvista"
+      ],
+      "optional": []
+    },
+    "risk_assessment": {
+      "import_feasibility": 0.8,
+      "intrusiveness_risk": "low",
+      "complexity": "high"
+    }
+  },
+  "deepwiki_analysis": {
+    "repo_url": "https://github.com/csml-rpi/Foam-Agent",
+    "repo_name": "Foam-Agent",
+    "analysis": "### Analysis Report: Foam-Agent GitHub Repository\n\n#### 1. What are the main functions and purposes of this repository?\n\nFoam-Agent is an automated system designed to generate and run OpenFOAM simulations based on user requirements. It operates as a stateful pipeline, where a series of functional nodes process data sequentially to set up, execute, and visualize a simulation case. Its main functions are:\n\n- **Automated Case Generation**: Takes a natural language description of a simulation and generates the complete directory structure and input files for OpenFOAM.\n- **Mesh Generation**: Includes logic for generating meshes using GMSH based on user requirements.\n- **Simulation Execution**: Runs the generated OpenFOAM case using an `Allrun` script.\n- **Error Correction Loop**: If a simulation fails, it reviews the error logs, uses an LLM to propose corrections, rewrites the input files, and re-runs the simulation.\n- **Data Retrieval**: Utilizes a FAISS vector database to retrieve information about similar tutorials, command help, and existing scripts to inform the generation process.\n- **Visualization**: Automatically generates visualizations of the simulation results using PyVista.\n\nThe target users are engineers and researchers who need to run OpenFOAM simulations but want to automate the process of case setup and execution.\n\n---\n\n#### 2. What are the core modules and entry points of this repository?\n\nThe system is not a multi-agent system in the traditional sense but rather a graph-based pipeline orchestrated by a main script. The core components are:\n\n- **Core Modules (Functional Nodes)**:\n  - `meshing_node`: Generates the computational mesh.\n  - `input_writer_node`: Creates and modifies the OpenFOAM input dictionaries.\n  - `local_runner_node`: Executes the simulation script.\n  - `reviewer_node`: Analyzes errors if the simulation fails.\n  - `visualization_node`: Creates plots and images from the results.\n\n- **Core Utilities (`utils.py`)**:\n  - `LLMService`: A wrapper for interacting with various large language models (OpenAI, Bedrock, Anthropic).\n  - `GraphState`: A TypedDict that defines the shared state passed between nodes in the pipeline.\n  - `retrieve_faiss`: A function to query the FAISS vector database for relevant information.\n\n- **Main Entry Points**:\n  - `foambench_main.py`: The primary script that initializes the configuration, sets up the graph, and starts the simulation generation process.\n  - `source/src/main.py`: Contains the logic for defining the graph structure and the flow between the different nodes.\n\n---\n\n#### 3. What are the main technology stacks and dependencies used by this repository?\n\n- **Language**: Python\n- **Orchestration**: LangChain (specifically for its graph/state machine capabilities and LLM integrations).\n- **AI/ML**: OpenAI, Anthropic, or AWS Bedrock models for generation and analysis.\n- **Vector Database**: FAISS for similarity search on tutorials and commands.\n- **Core Libraries**: Pydantic (for data validation), PyYAML (for configuration), Boto3 (for AWS). \n- **Visualization**: PyVista.\n\n#### 4. Is this project suitable for conversion to an MCP (Model Context Protocol) service? Why?\n\n**Suitability Analysis:**\nFoam-Agent is highly suitable for conversion to an MCP service. The reasons are:\n\n- **Clear Entry Point**: The entire workflow is triggered by a single entry point (`foambench_main.py`) that takes a user requirement, making it easy to expose as a single service endpoint.\n- **Stateful, Long-Running Task**: The process is a long-running, stateful task, which aligns well with the MCP model of managing complex, multi-step jobs.\n- **Modular Logic**: The graph-based node structure means the internal logic is already modular. While the entire pipeline would likely be a single MCP tool, the underlying design is robust.\n- **High Value, Complex Task**: Automating OpenFOAM simulations is a complex and valuable task. Encapsulating it as a service makes it accessible to a wider range of users without requiring them to manage the complex environment and dependencies.\n\n**Recommendations:**\n- **Service Endpoint**: Expose the functionality of `foambench_main.py` as a single tool endpoint that accepts the user requirement as input.\n- **State Management**: The existing `GraphState` can be used internally to manage the state of the task.\n- **Output**: The service should return the path to the final case directory and any generated visualizations as its output.",
+    "model": "gpt-4o",
+    "source": "llm_direct_analysis",
+    "success": true
+  },
+  "deepwiki_options": {
+    "enabled": true,
+    "model": "gpt-4o"
+  },
+  "risk": {
+    "import_feasibility": 0.8,
+    "intrusiveness_risk": "low",
+    "complexity": "high"
+  }
+}

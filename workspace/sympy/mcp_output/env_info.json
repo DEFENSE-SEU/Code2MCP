@@ -1,0 +1,17 @@
+{
+  "environment": {
+    "type": "conda",
+    "name": "sympy_096909_env",
+    "files": {
+      "pyproject_toml": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\sympy\\source\\pyproject.toml"
+    },
+    "python": "3.10",
+    "exec_prefix": []
+  },
+  "original_tests": {
+    "passed": true,
+    "report_path": null
+  },
+  "timestamp": 1755096959.8574708,
+  "conda_available": true
+}

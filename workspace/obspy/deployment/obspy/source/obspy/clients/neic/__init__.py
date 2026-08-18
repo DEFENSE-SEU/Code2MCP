@@ -1,0 +1,19 @@
+# -*- coding: utf-8 -*-
+"""
+obspy.clients.neic - CWB query module for ObsPy
+===============================================
+The obspy.clients.neic package contains a client for the NEIC CWB Query server.
+A public server is at 137.227.230.97" for cwbpub.usgs.gov on port 2061.
+
+:copyright:
+    The ObsPy Development Team (devs@obspy.org)
+:license:
+    GNU Lesser General Public License, Version 3
+    (https://www.gnu.org/copyleft/lesser.html)
+"""
+from .client import Client  # NOQA
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod(exclude_empty=True)

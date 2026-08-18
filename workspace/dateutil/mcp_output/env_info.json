@@ -1,0 +1,17 @@
+{
+  "environment": {
+    "type": "conda",
+    "name": "dateutil_516170_env",
+    "files": {
+      "pyproject_toml": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\dateutil\\source\\pyproject.toml"
+    },
+    "python": "3.10",
+    "exec_prefix": []
+  },
+  "original_tests": {
+    "passed": true,
+    "report_path": null
+  },
+  "timestamp": 1757516241.0380878,
+  "conda_available": true
+}

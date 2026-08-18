@@ -1,0 +1,125 @@
+{
+  "summary": {
+    "repository_url": "https://github.com/google-deepmind/alphagenome",
+    "summary": "Repository: google-deepmind/alphagenome\nCommit: 6d6a6afdc7f2f5e5fe438762b7a0581d01288e0c\nFiles analyzed: 89\n\nEstimated tokens: 186.9k",
+    "file_tree": "Directory structure:\n└── google-deepmind-alphagenome/\n    ├── README.md\n    ├── CHANGELOG.md\n    ├── conftest.py\n    ├── CONTRIBUTING.md\n    ├── hatch_build.py\n    ├── LICENSE\n    ├── pyproject.toml\n    ├── .pylintrc\n    ├── .readthedocs.yaml\n    ├── colabs/\n    │   ├── batch_variant_scoring.ipynb\n    │   ├── essential_commands.ipynb\n    │   ├── example_analysis_workflow.ipynb\n    │   ├── quick_start.ipynb\n    │   ├── tissue_ontology_mapping.ipynb\n    │   └── visualization_modality_tour.ipynb\n    ├── docs/\n    │   ├── README.md\n    │   ├── make.bat\n    │   ├── Makefile\n    │   └── source/\n    │       ├── conf.py\n    │       ├── exploring_model_metadata.md\n    │       ├── faqs.md\n    │       ├── index.md\n    │       ├── installation.md\n    │       ├── references.md\n    │       ├── refs.bib\n    │       ├── variant_scoring.md\n    │       ├── visualization_library_basics.md\n    │       ├── _templates/\n    │       │   └── autosummary/\n    │       │       └── class.rst\n    │       ├── api/\n    │       │   ├── data.md\n    │       │   ├── index.md\n    │       │   ├── interpretation.md\n    │       │   ├── models.md\n    │       │   └── visualization.md\n    │       ├── tutorials/\n    │       │   └── index.md\n    │       └── user_guides/\n    │           └── index.md\n    ├── scripts/\n    │   └── process_gtf.py\n    ├── src/\n    │   └── alphagenome/\n    │       ├── __init__.py\n    │       ├── colab_utils.py\n    │       ├── colab_utils_test.py\n    │       ├── tensor_utils.py\n    │       ├── tensor_utils_benchmark_test.py\n    │       ├── tensor_utils_test.py\n    │       ├── typing.py\n    │       ├── typing_test.py\n    │       ├── data/\n    │       │   ├── __init__.py\n    │       │   ├── fold_intervals.py\n    │       │   ├── fold_intervals_test.py\n    │       │   ├── gene_annotation.py\n    │       │   ├── gene_annotation_test.py\n    │       │   ├── genome.py\n    │       │   ├── genome_test.py\n    │       │   ├── junction_data.py\n    │       │   ├── junction_data_test.py\n    │       │   ├── ontology.py\n    │       │   ├── ontology_test.py\n    │       │   ├── track_data.py\n    │       │   ├── track_data_test.py\n    │       │   └── transcript.py\n    │       ├── interpretation/\n    │       │   ├── __init__.py\n    │       │   ├── ism.py\n    │       │   └── ism_test.py\n    │       ├── models/\n    │       │   ├── __init__.py\n    │       │   ├── dna_client.py\n    │       │   ├── dna_client_test.py\n    │       │   ├── dna_model.py\n    │       │   ├── dna_model_test.py\n    │       │   ├── dna_output.py\n    │       │   ├── dna_output_test.py\n    │       │   ├── interval_scorers.py\n    │       │   ├── interval_scorers_test.py\n    │       │   ├── junction_data_utils.py\n    │       │   ├── junction_data_utils_test.py\n    │       │   ├── track_data_utils.py\n    │       │   ├── track_data_utils_test.py\n    │       │   ├── variant_scorers.py\n    │       │   └── variant_scorers_test.py\n    │       ├── protos/\n    │       │   ├── __init__.py\n    │       │   ├── dna_model.proto\n    │       │   ├── dna_model_service.proto\n    │       │   └── tensor.proto\n    │       └── visualization/\n    │           ├── __init__.py\n    │           ├── plot.py\n    │           ├── plot_components.py\n    │           ├── plot_components_test.py\n    │           └── plot_transcripts.py\n    └── .github/\n        ├── ISSUE_TEMPLATE/\n        │   ├── bug_report.yml\n        │   └── config.yml\n        └── workflows/\n            ├── presubmit_checks.yml\n            └── release.yaml\n",
+    "content": {},
+    "processed_by": "gitingest",
+    "success": true
+  },
+  "structure": {
+    "packages": [
+      "source.src.alphagenome"
+    ]
+  },
+  "dependencies": {
+    "has_environment_yml": false,
+    "has_requirements_txt": false,
+    "pyproject": true,
+    "setup_cfg": false,
+    "setup_py": false
+  },
+  "entry_points": {
+    "imports": [],
+    "cli": [],
+    "modules": []
+  },
+  "llm_analysis": {
+    "core_modules": [
+      {
+        "package": "source.src.alphagenome.colab_utils",
+        "module": "colab_utils",
+        "functions": [
+          "load_colab_environment",
+          "setup_colab_notebook"
+        ],
+        "classes": [],
+        "description": "Utilities for setting up and managing Colab environments."
+      },
+      {
+        "package": "source.src.alphagenome.tensor_utils",
+        "module": "tensor_utils",
+        "functions": [
+          "create_tensor",
+          "process_tensor",
+          "benchmark_tensor_operations"
+        ],
+        "classes": [],
+        "description": "Functions for tensor creation, processing, and benchmarking."
+      },
+      {
+        "package": "source.src.alphagenome.data.gene_annotation",
+        "module": "gene_annotation",
+        "functions": [
+          "parse_gene_annotations",
+          "filter_gene_annotations"
+        ],
+        "classes": [],
+        "description": "Handles parsing and filtering of gene annotation data."
+      },
+      {
+        "package": "source.src.alphagenome.models.dna_model",
+        "module": "dna_model",
+        "functions": [
+          "train_dna_model",
+          "evaluate_dna_model"
+        ],
+        "classes": [
+          "DNAModel"
+        ],
+        "description": "Core DNA model implementation for training and evaluation."
+      },
+      {
+        "package": "source.src.alphagenome.visualization.plot",
+        "module": "plot",
+        "functions": [
+          "plot_gene_expression",
+          "plot_variant_effects"
+        ],
+        "classes": [],
+        "description": "Visualization utilities for plotting gene expression and variant effects."
+      }
+    ],
+    "cli_commands": [],
+    "import_strategy": {
+      "primary": "import",
+      "fallback": "blackbox",
+      "confidence": 0.85
+    },
+    "dependencies": {
+      "required": [
+        "numpy",
+        "pandas",
+        "matplotlib",
+        "tensorflow",
+        "protobuf"
+      ],
+      "optional": [
+        "jupyter",
+        "seaborn"
+      ]
+    },
+    "risk_assessment": {
+      "import_feasibility": 0.85,
+      "intrusiveness_risk": "low",
+      "complexity": "medium"
+    }
+  },
+  "deepwiki_analysis": {
+    "repo_url": "https://github.com/google-deepmind/alphagenome",
+    "repo_name": "alphagenome",
+    "content": "google-deepmind/alphagenome\nGetting Started\nAPI Reference\nCore Client\nData Structures\nVisualization\nExamples and Tutorials\nBatch Variant Scoring\nInteractive Variant Scoring\nAnalysis Workflows\nVisualization Techniques\nBiological Context Mapping\nDevelopment\nContributing\nTesting and Quality\nRelease Process\nConfiguration Files\nDocumentation System\ndocs/README.md\nThis document provides an overview of the AlphaGenome client library, a Python package that enables researchers to interact with Google DeepMind's AlphaGenome API for genomic sequence analysis. This page covers the high-level system architecture, core components, and how they work together to provide genomic predictions.\nFor installation and basic usage instructions, seeGetting Started. For detailed API documentation, seeAPI Reference. For example workflows and tutorials, seeExamples and Tutorials.\nWhat is AlphaGenome\nAlphaGenome is Google DeepMind's unifying deep learning model for deciphering the regulatory code within DNA sequences. The model provides multimodal predictions encompassing diverse functional outputs such as gene expression, splicing patterns, chromatin features, and contact maps. AlphaGenome can analyze DNA sequences of up to 1 million base pairs in length and deliver predictions at single base-pair resolution for most outputs.\nThis repository contains the client-side Python library that enables researchers to:\nConnect to the AlphaGenome API service\nSubmit genomic sequences and variants for prediction\nRetrieve and visualize model outputs\nPerform batch variant scoring and analysis\nThe API is offered free of charge for non-commercial use and is well-suited for smaller to medium-scale analyses requiring thousands of predictions.\nSources:README.md14-35docs/README.md1-6\nSystem Architecture\nThe AlphaGenome client library follows a three-layer architecture that separates user interfaces, client library components, and external services:\nExternal ServicesAlphaGenome Client LibraryUser Interface Layerquick_start.ipynbbatch_variant_scoring.ipynbessential_commands.ipynbvariant_scoring_ui.ipynbexample_analysis_workflow.ipynbdna_client.DnaClientgenome.Intervalgenome.Varianttrack_data.TrackDataanndata.AnnDataplot_componentsAlphaGenome API ServicePyPI Repository\nExternal Services\nAlphaGenome Client Library\nUser Interface Layer\nquick_start.ipynb\nbatch_variant_scoring.ipynb\nessential_commands.ipynb\nvariant_scoring_ui.ipynb\nexample_analysis_workflow.ipynb\ndna_client.DnaClient\ngenome.Interval\ngenome.Variant\ntrack_data.TrackData\nanndata.AnnData\nplot_components\nAlphaGenome API Service\nPyPI Repository\nThe user interface layer consists of Jupyter notebooks that demonstrate different use cases and workflows. The client library layer provides the core Python API for interacting with genomic data and the remote service. The external services layer includes the AlphaGenome API hosted by Google DeepMind and the PyPI package repository.\nSources:README.md63-73README.md78-118\nCore Components\nThe client library is built around several key components that handle different aspects of genomic analysis:\nVisualization SystemOutput Data Structuresdna_client.DnaClient MethodsInput Data Structuresgenome.Intervalchromosome, start, endgenome.Variantchromosome, position,reference_bases, alternate_basesRaw DNA Stringdna_client.create()predict_sequence()predict_interval()predict_variant()score_variant()score_variants()track_data.TrackDataModel Predictionsanndata.AnnDataVariant Scoresplot_components.plot()OverlaidTracksVariantAnnotation\nVisualization System\nOutput Data Structures\ndna_client.DnaClient Methods\nInput Data Structures\ngenome.Intervalchromosome, start, end\ngenome.Variantchromosome, position,reference_bases, alternate_bases\nRaw DNA String\ndna_client.create()\npredict_sequence()\npredict_interval()\npredict_variant()\nscore_variant()\nscore_variants()\ntrack_data.TrackDataModel Predictions\nanndata.AnnDataVariant Scores\nplot_components.plot()\nOverlaidTracks\nVariantAnnotation\nCore Client (dna_client)\nThedna_client.DnaClientclass serves as the main interface to the AlphaGenome API. It is created using the factory functiondna_client.create()which requires an API key. The client provides methods for different types of predictions:\ndna_client.DnaClient\ndna_client.create()\npredict_sequence()- Analyze raw DNA sequences\npredict_sequence()\npredict_interval()- Predict properties for genomic intervals\npredict_interval()\npredict_variant()- Compare reference and alternate sequences for variants\npredict_variant()\nscore_variant()- Calculate variant effect scores\nscore_variant()\nscore_variants()- Batch process multiple variants\nscore_variants()\nData Structures\nThe library defines specialized data structures for genomic analysis:\ngenome.Interval- Represents genomic coordinates with chromosome, start, and end positions\ngenome.Interval\ngenome.Variant- Represents genetic variants with chromosome, position, reference bases, and alternate bases\ngenome.Variant\ntrack_data.TrackData- Contains model prediction outputs with genomic coordinates\ntrack_data.TrackData\nanndata.AnnData- Stores variant scores and associated metadata\nanndata.AnnData\nVisualization System\nTheplot_componentsmodule provides functions for visualizing genomic predictions:\nplot_components\nplot_components.plot()- Main plotting function\nplot_components.plot()\nOverlaidTracks- Overlay multiple prediction tracks\nOverlaidTracks\nVariantAnnotation- Annotate variant positions on plots\nVariantAnnotation\nSources:README.md78-118\nThe typical workflow for genomic analysis using the AlphaGenome client follows this sequence:\n\"plot_components\"\"AlphaGenome API\"\"dna_client.DnaClient\"\"User\"\"plot_components\"\"AlphaGenome API\"\"dna_client.DnaClient\"\"User\"\"dna_client.create(API_KEY)\"\"genome.Interval(chr, start, end)\"\"genome.Variant(chr, pos, ref, alt)\"\"predict_variant(interval, variant, outputs)\"\"gRPC request with genomic data\"\"Predictions (reference + alternate)\"\"track_data.TrackData objects\"\"plot_components.plot(tracks, annotations)\"\"matplotlib figure\"\nAuthentication: Users create a client instance using their API key\nData Definition: Genomic intervals and variants are defined using the provided data structures\nPrediction Request: The client sends requests to the AlphaGenome API service\nResult Processing: Predictions are returned as structured data objects\nVisualization: Results can be plotted using the visualization components\nSources:README.md78-118\nOutput Types and Capabilities\nAlphaGenome provides predictions for multiple molecular properties through thedna_client.OutputTypeenumeration. The model can predict:\ndna_client.OutputType\nThe model analyzes sequences up to 1 million base pairs in length and can provide tissue-specific predictions using ontology terms likeUBERON:0001157for specific biological contexts.\nUBERON:0001157\nSources:README.md19-26README.md96-101\nUsage Patterns\nThe client library supports several common analysis patterns:\nSingle Variant Analysis\nFor analyzing individual variants, users typically usepredict_variant()to compare reference and alternate sequences, then visualize the differences using overlaid tracks.\npredict_variant()\nBatch Variant Scoring\nFor processing multiple variants efficiently, thescore_variants()method provides batch processing capabilities that return variant effect scores inanndata.AnnDataformat.\nscore_variants()\nanndata.AnnData\nInteractive Analysis\nThe library integrates well with Jupyter notebooks, particularly Google Colab, enabling interactive genomic analysis workflows with immediate visualization feedback.\nLarge-Scale Analysis Considerations\nThe API is optimized for smaller to medium-scale analyses requiring thousands of predictions. For analyses requiring more than 1 million predictions, alternative approaches may be more suitable.\nSources:README.md30-35README.md78-118\nRefresh this wiki\nOn this page\nWhat is AlphaGenome\nSystem Architecture\nCore Components\nCore Client (`dna_client`)\nData Structures\nVisualization System\nOutput Types and Capabilities\nUsage Patterns\nSingle Variant Analysis\nBatch Variant Scoring\nInteractive Analysis\nLarge-Scale Analysis Considerations",
+    "model": "gpt-5",
+    "source": "selenium",
+    "success": true
+  },
+  "deepwiki_options": {
+    "enabled": true,
+    "model": "gpt-5"
+  },
+  "risk": {
+    "import_feasibility": 0.85,
+    "intrusiveness_risk": "low",
+    "complexity": "medium"
+  }
+}

@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+fastmcp>=2.12.0
+torch
+fairscale
+numpy
+tqdm
+scipy

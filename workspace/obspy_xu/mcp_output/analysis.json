@@ -1,0 +1,2593 @@
+{
+  "summary": {
+    "repository_url": "https://github.com/obspy/obspy",
+    "summary": "Imported via zip fallback, file count: 811",
+    "file_tree": {
+      ".github/ISSUE_TEMPLATE.md": {
+        "size": 1091
+      },
+      ".github/ISSUE_TEMPLATE/bug_report.yml": {
+        "size": 3059
+      },
+      ".github/ISSUE_TEMPLATE/config.yml": {
+        "size": 458
+      },
+      ".github/ISSUE_TEMPLATE/documentation.yml": {
+        "size": 1244
+      },
+      ".github/ISSUE_TEMPLATE/feature_request.yml": {
+        "size": 994
+      },
+      ".github/PULL_REQUEST_TEMPLATE.md": {
+        "size": 2058
+      },
+      ".github/dependabot.yml": {
+        "size": 157
+      },
+      ".github/docs_conda_env.yml": {
+        "size": 776
+      },
+      ".github/test_conda_env.yml": {
+        "size": 539
+      },
+      ".github/test_mindep_conda_env.yml": {
+        "size": 299
+      },
+      ".github/test_mindepversion_conda_env.yml": {
+        "size": 441
+      },
+      ".github/workflows/build_wheels.yml": {
+        "size": 3713
+      },
+      ".github/workflows/docs_building.yml": {
+        "size": 2237
+      },
+      ".github/workflows/tests.yml": {
+        "size": 9010
+      },
+      ".landscape.yaml": {
+        "size": 150
+      },
+      ".pre-commit-config.yaml": {
+        "size": 108
+      },
+      "CHANGELOG.txt": {
+        "size": 109520
+      },
+      "CODE_OF_CONDUCT.md": {
+        "size": 3389
+      },
+      "CONTRIBUTING.md": {
+        "size": 6768
+      },
+      "CONTRIBUTORS.txt": {
+        "size": 22
+      },
+      "LICENSE.txt": {
+        "size": 17
+      },
+      "README.md": {
+        "size": 5365
+      },
+      "codecov.yml": {
+        "size": 722
+      },
+      "misc/docker/README.md": {
+        "size": 11996
+      },
+      "misc/docs/gulpfile.js": {
+        "size": 3330
+      },
+      "misc/docs/make_assets.py": {
+        "size": 2234
+      },
+      "misc/docs/make_c_coverage.py": {
+        "size": 2860
+      },
+      "misc/docs/make_credits.py": {
+        "size": 2002
+      },
+      "misc/docs/package.json": {
+        "size": 637
+      },
+      "misc/docs/py3-docs-master.yml": {
+        "size": 4571
+      },
+      "misc/docs/requirements.txt": {
+        "size": 260
+      },
+      "misc/docs/source/_ext/autosummary/generate.py": {
+        "size": 11511
+      },
+      "misc/docs/source/_ext/citations.py": {
+        "size": 4776
+      },
+      "misc/docs/source/_ext/credits.py": {
+        "size": 2565
+      },
+      "misc/docs/source/_ext/plot_directive.py": {
+        "size": 22387
+      },
+      "misc/docs/source/conf.py": {
+        "size": 8332
+      },
+      "misc/docs/source/credits/FUNDS.txt": {
+        "size": 428
+      },
+      "misc/docs/source/credits/QUOTES.txt": {
+        "size": 171
+      },
+      "misc/docs/source/tutorial/advanced_exercise/advanced_exercise_solution_1.py": {
+        "size": 469
+      },
+      "misc/docs/source/tutorial/advanced_exercise/advanced_exercise_solution_2a.py": {
+        "size": 373
+      },
+      "misc/docs/source/tutorial/advanced_exercise/advanced_exercise_solution_2b.py": {
+        "size": 581
+      },
+      "misc/docs/source/tutorial/advanced_exercise/advanced_exercise_solution_3a.py": {
+        "size": 1064
+      },
+      "misc/docs/source/tutorial/advanced_exercise/advanced_exercise_solution_3b.py": {
+        "size": 956
+      },
+      "misc/docs/source/tutorial/advanced_exercise/advanced_exercise_solution_3c.py": {
+        "size": 1007
+      },
+      "misc/docs/source/tutorial/advanced_exercise/advanced_exercise_solution_4a.py": {
+        "size": 996
+      },
+      "misc/docs/source/tutorial/advanced_exercise/advanced_exercise_solution_4b.py": {
+        "size": 1348
+      },
+      "misc/docs/source/tutorial/advanced_exercise/advanced_exercise_solution_4c.py": {
+        "size": 1585
+      },
+      "misc/docs/source/tutorial/advanced_exercise/advanced_exercise_solution_5.py": {
+        "size": 2627
+      },
+      "misc/docs/source/tutorial/code_snippets/anything_to_miniseed.py": {
+        "size": 1130
+      },
+      "misc/docs/source/tutorial/code_snippets/array_response_function.py": {
+        "size": 929
+      },
+      "misc/docs/source/tutorial/code_snippets/beachball_plot.py": {
+        "size": 318
+      },
+      "misc/docs/source/tutorial/code_snippets/beamforming_fk_analysis_1.py": {
+        "size": 3286
+      },
+      "misc/docs/source/tutorial/code_snippets/beamforming_fk_analysis_2.py": {
+        "size": 3963
+      },
+      "misc/docs/source/tutorial/code_snippets/cartopy_plot_custom.py": {
+        "size": 754
+      },
+      "misc/docs/source/tutorial/code_snippets/cartopy_plot_with_beachballs.py": {
+        "size": 2730
+      },
+      "misc/docs/source/tutorial/code_snippets/cartopy_plot_with_beachballs2.py": {
+        "size": 607
+      },
+      "misc/docs/source/tutorial/code_snippets/cartopy_with_beachball_read_events.py": {
+        "size": 1016
+      },
+      "misc/docs/source/tutorial/code_snippets/continuous_wavelet_transform_mlpy.py": {
+        "size": 1486
+      },
+      "misc/docs/source/tutorial/code_snippets/continuous_wavelet_transform_obspy.py": {
+        "size": 680
+      },
+      "misc/docs/source/tutorial/code_snippets/downsampling_seismograms.py": {
+        "size": 1331
+      },
+      "misc/docs/source/tutorial/code_snippets/export_seismograms_to_ascii.py": {
+        "size": 731
+      },
+      "misc/docs/source/tutorial/code_snippets/export_seismograms_to_matlab.py": {
+        "size": 259
+      },
+      "misc/docs/source/tutorial/code_snippets/filtering_seismograms.py": {
+        "size": 723
+      },
+      "misc/docs/source/tutorial/code_snippets/frequency_response.py": {
+        "size": 966
+      },
+      "misc/docs/source/tutorial/code_snippets/hierarchical_clustering.py": {
+        "size": 1260
+      },
+      "misc/docs/source/tutorial/code_snippets/merging_seismograms.py": {
+        "size": 1033
+      },
+      "misc/docs/source/tutorial/code_snippets/plot_ray_paths.py": {
+        "size": 238
+      },
+      "misc/docs/source/tutorial/code_snippets/plot_travel_times.py": {
+        "size": 207
+      },
+      "misc/docs/source/tutorial/code_snippets/plotting_spectrograms.py": {
+        "size": 159
+      },
+      "misc/docs/source/tutorial/code_snippets/probabilistic_power_spectral_density.py": {
+        "size": 364
+      },
+      "misc/docs/source/tutorial/code_snippets/probabilistic_power_spectral_density2.py": {
+        "size": 407
+      },
+      "misc/docs/source/tutorial/code_snippets/probabilistic_power_spectral_density3.py": {
+        "size": 379
+      },
+      "misc/docs/source/tutorial/code_snippets/probabilistic_power_spectral_density4.py": {
+        "size": 193
+      },
+      "misc/docs/source/tutorial/code_snippets/probabilistic_power_spectral_density5.py": {
+        "size": 184
+      },
+      "misc/docs/source/tutorial/code_snippets/reading_seismograms.py": {
+        "size": 98
+      },
+      "misc/docs/source/tutorial/code_snippets/seismogram_envelopes.py": {
+        "size": 730
+      },
+      "misc/docs/source/tutorial/code_snippets/seismometer_correction_simulation_1.py": {
+        "size": 661
+      },
+      "misc/docs/source/tutorial/code_snippets/seismometer_correction_simulation_2.py": {
+        "size": 931
+      },
+      "misc/docs/source/tutorial/code_snippets/seismometer_correction_simulation_5.py": {
+        "size": 306
+      },
+      "misc/docs/source/tutorial/code_snippets/time_frequency_misfit_ex1.py": {
+        "size": 451
+      },
+      "misc/docs/source/tutorial/code_snippets/time_frequency_misfit_ex2.py": {
+        "size": 975
+      },
+      "misc/docs/source/tutorial/code_snippets/time_frequency_misfit_ex3.py": {
+        "size": 965
+      },
+      "misc/docs/source/tutorial/code_snippets/time_frequency_misfit_ex4.py": {
+        "size": 711
+      },
+      "misc/docs/source/tutorial/code_snippets/time_frequency_misfit_ex5.py": {
+        "size": 881
+      },
+      "misc/docs/source/tutorial/code_snippets/travel_time_body_waves.py": {
+        "size": 1617
+      },
+      "misc/docs/source/tutorial/code_snippets/travel_time_cartesian_raypath.py": {
+        "size": 253
+      },
+      "misc/docs/source/tutorial/code_snippets/travel_time_spherical_raypath.py": {
+        "size": 241
+      },
+      "misc/docs/source/tutorial/code_snippets/trigger_tutorial.py": {
+        "size": 141
+      },
+      "misc/docs/source/tutorial/code_snippets/trigger_tutorial_advanced.py": {
+        "size": 914
+      },
+      "misc/docs/source/tutorial/code_snippets/trigger_tutorial_aic_simple.py": {
+        "size": 936
+      },
+      "misc/docs/source/tutorial/code_snippets/trigger_tutorial_carl_sta_trig.py": {
+        "size": 282
+      },
+      "misc/docs/source/tutorial/code_snippets/trigger_tutorial_classic_sta_lta.py": {
+        "size": 275
+      },
+      "misc/docs/source/tutorial/code_snippets/trigger_tutorial_delayed_sta_lta.py": {
+        "size": 270
+      },
+      "misc/docs/source/tutorial/code_snippets/trigger_tutorial_energy_ratio.py": {
+        "size": 381
+      },
+      "misc/docs/source/tutorial/code_snippets/trigger_tutorial_modified_energy_ratio.py": {
+        "size": 399
+      },
+      "misc/docs/source/tutorial/code_snippets/trigger_tutorial_recursive_sta_lta.py": {
+        "size": 277
+      },
+      "misc/docs/source/tutorial/code_snippets/trigger_tutorial_z_detect.py": {
+        "size": 249
+      },
+      "misc/docs/source/tutorial/code_snippets/waveform_plotting_tutorial_1.py": {
+        "size": 113
+      },
+      "misc/docs/source/tutorial/code_snippets/waveform_plotting_tutorial_2.py": {
+        "size": 274
+      },
+      "misc/docs/source/tutorial/code_snippets/waveform_plotting_tutorial_3.py": {
+        "size": 284
+      },
+      "misc/docs/source/tutorial/code_snippets/waveform_plotting_tutorial_4.py": {
+        "size": 127
+      },
+      "misc/docs/source/tutorial/code_snippets/waveform_plotting_tutorial_5.py": {
+        "size": 349
+      },
+      "misc/docs/source/tutorial/code_snippets/waveform_plotting_tutorial_6.py": {
+        "size": 1915
+      },
+      "misc/docs/source/tutorial/code_snippets/waveform_plotting_tutorial_7.py": {
+        "size": 223
+      },
+      "misc/docs/source/tutorial/code_snippets/xcorr_pick_correction.py": {
+        "size": 1466
+      },
+      "misc/gource/create-movie.py": {
+        "size": 7356
+      },
+      "misc/installer/anaconda/README.md": {
+        "size": 2075
+      },
+      "misc/installer/anaconda/obspy/meta.yaml": {
+        "size": 1763
+      },
+      "misc/installer/salt-formula/README.md": {
+        "size": 1573
+      },
+      "misc/scripts/docs_buildbot/remove_old_pull_request_docs.py": {
+        "size": 1345
+      },
+      "misc/scripts/docs_buildbot/update_pull_request_metadata.py": {
+        "size": 1822
+      },
+      "misc/scripts/docs_deploybot/deploy_docs.py": {
+        "size": 7999
+      },
+      "misc/scripts/docs_deploybot/deploybot.py": {
+        "size": 1443
+      },
+      "misc/scripts/docs_deploybot/remove_old_pr_docs.py": {
+        "size": 639
+      },
+      "obspy/CONTRIBUTORS.txt": {
+        "size": 2253
+      },
+      "obspy/LICENSE.txt": {
+        "size": 42989
+      },
+      "obspy/__init__.py": {
+        "size": 3463
+      },
+      "obspy/clients/__init__.py": {
+        "size": 24
+      },
+      "obspy/clients/base.py": {
+        "size": 16984
+      },
+      "obspy/clients/earthworm/README.txt": {
+        "size": 716
+      },
+      "obspy/clients/earthworm/__init__.py": {
+        "size": 1687
+      },
+      "obspy/clients/earthworm/client.py": {
+        "size": 9294
+      },
+      "obspy/clients/earthworm/tests/__init__.py": {
+        "size": 65
+      },
+      "obspy/clients/earthworm/tests/test_client.py": {
+        "size": 6591
+      },
+      "obspy/clients/earthworm/waveserver.py": {
+        "size": 10044
+      },
+      "obspy/clients/fdsn/README.txt": {
+        "size": 874
+      },
+      "obspy/clients/fdsn/__init__.py": {
+        "size": 10466
+      },
+      "obspy/clients/fdsn/client.py": {
+        "size": 92396
+      },
+      "obspy/clients/fdsn/header.py": {
+        "size": 9798
+      },
+      "obspy/clients/fdsn/mass_downloader/__init__.py": {
+        "size": 23017
+      },
+      "obspy/clients/fdsn/mass_downloader/domain.py": {
+        "size": 5576
+      },
+      "obspy/clients/fdsn/mass_downloader/download_helpers.py": {
+        "size": 52913
+      },
+      "obspy/clients/fdsn/mass_downloader/mass_downloader.py": {
+        "size": 15620
+      },
+      "obspy/clients/fdsn/mass_downloader/restrictions.py": {
+        "size": 13476
+      },
+      "obspy/clients/fdsn/mass_downloader/utils.py": {
+        "size": 21687
+      },
+      "obspy/clients/fdsn/routing/__init__.py": {
+        "size": 591
+      },
+      "obspy/clients/fdsn/routing/eidaws_routing_client.py": {
+        "size": 8536
+      },
+      "obspy/clients/fdsn/routing/federator_routing_client.py": {
+        "size": 7057
+      },
+      "obspy/clients/fdsn/routing/routing_client.py": {
+        "size": 14175
+      },
+      "obspy/clients/fdsn/tests/__init__.py": {
+        "size": 59
+      },
+      "obspy/clients/fdsn/tests/data/channel_level_fdsn.txt": {
+        "size": 1186
+      },
+      "obspy/clients/fdsn/tests/data/channel_level_fdsn_obscure_location_code.txt": {
+        "size": 355
+      },
+      "obspy/clients/fdsn/tests/data/channel_level_fdsn_with_multiple_epochs.txt": {
+        "size": 684
+      },
+      "obspy/clients/fdsn/tests/data/dataselect_helpstring.txt": {
+        "size": 262
+      },
+      "obspy/clients/fdsn/tests/data/eida_token.txt": {
+        "size": 603
+      },
+      "obspy/clients/fdsn/tests/data/event_helpstring.txt": {
+        "size": 2155
+      },
+      "obspy/clients/fdsn/tests/data/station_helpstring.txt": {
+        "size": 1553
+      },
+      "obspy/clients/fdsn/tests/data/uncommon_channel_location.txt": {
+        "size": 860
+      },
+      "obspy/clients/fdsn/tests/test_base_routing_client.py": {
+        "size": 8627
+      },
+      "obspy/clients/fdsn/tests/test_client.py": {
+        "size": 80954
+      },
+      "obspy/clients/fdsn/tests/test_eidaws_routing_client.py": {
+        "size": 15320
+      },
+      "obspy/clients/fdsn/tests/test_federator_routing_client.py": {
+        "size": 15746
+      },
+      "obspy/clients/fdsn/tests/test_mass_downloader.py": {
+        "size": 113540
+      },
+      "obspy/clients/fdsn/tests/test_wadl_parser.py": {
+        "size": 17361
+      },
+      "obspy/clients/fdsn/wadl_parser.py": {
+        "size": 8703
+      },
+      "obspy/clients/filesystem/__init__.py": {
+        "size": 1432
+      },
+      "obspy/clients/filesystem/db.py": {
+        "size": 3700
+      },
+      "obspy/clients/filesystem/miniseed.py": {
+        "size": 11885
+      },
+      "obspy/clients/filesystem/msriterator.py": {
+        "size": 5912
+      },
+      "obspy/clients/filesystem/sds.py": {
+        "size": 28782
+      },
+      "obspy/clients/filesystem/tests/__init__.py": {
+        "size": 65
+      },
+      "obspy/clients/filesystem/tests/test_sds.py": {
+        "size": 12480
+      },
+      "obspy/clients/filesystem/tests/test_tsindex.py": {
+        "size": 38855
+      },
+      "obspy/clients/filesystem/tsindex.py": {
+        "size": 76623
+      },
+      "obspy/clients/httpproxy.py": {
+        "size": 3641
+      },
+      "obspy/clients/iris/README.txt": {
+        "size": 868
+      },
+      "obspy/clients/iris/__init__.py": {
+        "size": 3472
+      },
+      "obspy/clients/iris/client.py": {
+        "size": 43084
+      },
+      "obspy/clients/iris/tests/__init__.py": {
+        "size": 59
+      },
+      "obspy/clients/iris/tests/test_client.py": {
+        "size": 11673
+      },
+      "obspy/clients/neic/README.txt": {
+        "size": 1407
+      },
+      "obspy/clients/neic/__init__.py": {
+        "size": 570
+      },
+      "obspy/clients/neic/client.py": {
+        "size": 10816
+      },
+      "obspy/clients/neic/tests/__init__.py": {
+        "size": 59
+      },
+      "obspy/clients/neic/tests/test_client.py": {
+        "size": 4230
+      },
+      "obspy/clients/neic/util.py": {
+        "size": 843
+      },
+      "obspy/clients/nrl/__init__.py": {
+        "size": 4366
+      },
+      "obspy/clients/nrl/client.py": {
+        "size": 27541
+      },
+      "obspy/clients/nrl/tests/__init__.py": {
+        "size": 58
+      },
+      "obspy/clients/nrl/tests/data/IRIS/dataloggers/index.txt": {
+        "size": 627
+      },
+      "obspy/clients/nrl/tests/data/IRIS/dataloggers/reftek/index.txt": {
+        "size": 294
+      },
+      "obspy/clients/nrl/tests/data/IRIS/dataloggers/reftek/rt130.1.txt": {
+        "size": 1150
+      },
+      "obspy/clients/nrl/tests/data/IRIS/dataloggers/reftek/rt130.txt": {
+        "size": 119
+      },
+      "obspy/clients/nrl/tests/data/IRIS/index.txt": {
+        "size": 131
+      },
+      "obspy/clients/nrl/tests/data/IRIS/sensors/guralp/cmg-3t.120.txt": {
+        "size": 341
+      },
+      "obspy/clients/nrl/tests/data/IRIS/sensors/guralp/cmg-3t.120_50.txt": {
+        "size": 362
+      },
+      "obspy/clients/nrl/tests/data/IRIS/sensors/guralp/cmg-3t.txt": {
+        "size": 504
+      },
+      "obspy/clients/nrl/tests/data/IRIS/sensors/guralp/index.txt": {
+        "size": 385
+      },
+      "obspy/clients/nrl/tests/data/IRIS/sensors/index.txt": {
+        "size": 942
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_resp/datalogger/REFTEK/130-01.txt": {
+        "size": 112
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_resp/datalogger/REFTEK/130-01_PG1.txt": {
+        "size": 1509
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_resp/datalogger/REFTEK/index.txt": {
+        "size": 384
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_resp/datalogger/index.txt": {
+        "size": 1164
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_resp/index.txt": {
+        "size": 203
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_resp/integrated/index.txt": {
+        "size": 146
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_resp/sensor/Guralp/CMG-3T.txt": {
+        "size": 259
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_resp/sensor/Guralp/CMG-3T_LP120.txt": {
+        "size": 139
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_resp/sensor/Guralp/CMG-3T_LP120_HF50.txt": {
+        "size": 627
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_resp/sensor/Guralp/index.txt": {
+        "size": 492
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_resp/sensor/index.txt": {
+        "size": 1510
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_resp/soh/index.txt": {
+        "size": 135
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/datalogger/REFTEK/130-01.txt": {
+        "size": 112
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/datalogger/REFTEK/130-01_PG1.txt": {
+        "size": 1483
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/datalogger/REFTEK/index.txt": {
+        "size": 384
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/datalogger/index.txt": {
+        "size": 1164
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/index.txt": {
+        "size": 203
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/integrated/GeoSIG/ela-GMSseries.txt": {
+        "size": 94
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/integrated/GeoSIG/ela-GMSseries_LF0.txt": {
+        "size": 177
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/integrated/GeoSIG/ela-GMSseries_LF0_HR1000.txt": {
+        "size": 214
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/integrated/GeoSIG/ela-GMSseries_LF0_HR1000_FR100.txt": {
+        "size": 462
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/integrated/GeoSIG/index.txt": {
+        "size": 98
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/integrated/index.txt": {
+        "size": 146
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/sensor/Guralp/CMG-3T.txt": {
+        "size": 259
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/sensor/Guralp/CMG-3T_LP120.txt": {
+        "size": 139
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/sensor/Guralp/CMG-3T_LP120_HF50.txt": {
+        "size": 621
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/sensor/Guralp/index.txt": {
+        "size": 492
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/sensor/index.txt": {
+        "size": 1510
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/soh/Quanterra/Q330PacketBaler.txt": {
+        "size": 605
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/soh/Quanterra/Q330PacketBaler_CDMassPosition.txt": {
+        "size": 101
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/soh/Quanterra/Q330PacketBaler_CDMassPosition_SG10.txt": {
+        "size": 235
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/soh/Quanterra/index.txt": {
+        "size": 98
+      },
+      "obspy/clients/nrl/tests/data/IRIS_v2_stationxml/soh/index.txt": {
+        "size": 135
+      },
+      "obspy/clients/nrl/tests/test_nrl.py": {
+        "size": 17684
+      },
+      "obspy/clients/seedlink/README.txt": {
+        "size": 1239
+      },
+      "obspy/clients/seedlink/__init__.py": {
+        "size": 1330
+      },
+      "obspy/clients/seedlink/basic_client.py": {
+        "size": 16520
+      },
+      "obspy/clients/seedlink/client/__init__.py": {
+        "size": 0
+      },
+      "obspy/clients/seedlink/client/seedlinkconnection.py": {
+        "size": 63071
+      },
+      "obspy/clients/seedlink/client/slnetstation.py": {
+        "size": 2674
+      },
+      "obspy/clients/seedlink/client/slstate.py": {
+        "size": 6804
+      },
+      "obspy/clients/seedlink/easyseedlink.py": {
+        "size": 19441
+      },
+      "obspy/clients/seedlink/seedlinkexception.py": {
+        "size": 512
+      },
+      "obspy/clients/seedlink/slclient.py": {
+        "size": 12952
+      },
+      "obspy/clients/seedlink/slpacket.py": {
+        "size": 7400
+      },
+      "obspy/clients/seedlink/tests/__init__.py": {
+        "size": 63
+      },
+      "obspy/clients/seedlink/tests/example_SL_Hello.py": {
+        "size": 533
+      },
+      "obspy/clients/seedlink/tests/example_SL_RTTrace.py": {
+        "size": 4893
+      },
+      "obspy/clients/seedlink/tests/test_basic_client.py": {
+        "size": 5099
+      },
+      "obspy/clients/seedlink/tests/test_seedlinkconnection.py": {
+        "size": 1430
+      },
+      "obspy/clients/seedlink/tests/test_slclient.py": {
+        "size": 2301
+      },
+      "obspy/clients/seedlink/tests/test_slnetstation.py": {
+        "size": 682
+      },
+      "obspy/clients/seedlink/tests/test_slpacket.py": {
+        "size": 1207
+      },
+      "obspy/clients/seedlink/tests/test_slstate.py": {
+        "size": 527
+      },
+      "obspy/clients/syngine/README.txt": {
+        "size": 832
+      },
+      "obspy/clients/syngine/__init__.py": {
+        "size": 4466
+      },
+      "obspy/clients/syngine/client.py": {
+        "size": 27115
+      },
+      "obspy/clients/syngine/tests/__init__.py": {
+        "size": 62
+      },
+      "obspy/clients/syngine/tests/test_client.py": {
+        "size": 17670
+      },
+      "obspy/conftest.py": {
+        "size": 10842
+      },
+      "obspy/core/README.txt": {
+        "size": 1045
+      },
+      "obspy/core/__init__.py": {
+        "size": 4738
+      },
+      "obspy/core/compatibility.py": {
+        "size": 1456
+      },
+      "obspy/core/event/__init__.py": {
+        "size": 1315
+      },
+      "obspy/core/event/base.py": {
+        "size": 32168
+      },
+      "obspy/core/event/catalog.py": {
+        "size": 30696
+      },
+      "obspy/core/event/event.py": {
+        "size": 15095
+      },
+      "obspy/core/event/header.py": {
+        "size": 6837
+      },
+      "obspy/core/event/magnitude.py": {
+        "size": 16837
+      },
+      "obspy/core/event/origin.py": {
+        "size": 24035
+      },
+      "obspy/core/event/resourceid.py": {
+        "size": 29622
+      },
+      "obspy/core/event/source.py": {
+        "size": 21428
+      },
+      "obspy/core/inventory/README.txt": {
+        "size": 877
+      },
+      "obspy/core/inventory/__init__.py": {
+        "size": 8669
+      },
+      "obspy/core/inventory/channel.py": {
+        "size": 19728
+      },
+      "obspy/core/inventory/inventory.py": {
+        "size": 48950
+      },
+      "obspy/core/inventory/network.py": {
+        "size": 32905
+      },
+      "obspy/core/inventory/response.py": {
+        "size": 103805
+      },
+      "obspy/core/inventory/station.py": {
+        "size": 24820
+      },
+      "obspy/core/inventory/util.py": {
+        "size": 45839
+      },
+      "obspy/core/preview.py": {
+        "size": 9063
+      },
+      "obspy/core/stream.py": {
+        "size": 158861
+      },
+      "obspy/core/tests/__init__.py": {
+        "size": 51
+      },
+      "obspy/core/tests/data/expected_response_IM_IL31__BHZ.txt": {
+        "size": 75972
+      },
+      "obspy/core/tests/test_channel.py": {
+        "size": 5459
+      },
+      "obspy/core/tests/test_compatibility.py": {
+        "size": 895
+      },
+      "obspy/core/tests/test_event.py": {
+        "size": 24961
+      },
+      "obspy/core/tests/test_inventory.py": {
+        "size": 27707
+      },
+      "obspy/core/tests/test_network.py": {
+        "size": 13107
+      },
+      "obspy/core/tests/test_preview.py": {
+        "size": 8396
+      },
+      "obspy/core/tests/test_resource_identifier.py": {
+        "size": 30832
+      },
+      "obspy/core/tests/test_response.py": {
+        "size": 28044
+      },
+      "obspy/core/tests/test_station.py": {
+        "size": 6252
+      },
+      "obspy/core/tests/test_stats.py": {
+        "size": 11548
+      },
+      "obspy/core/tests/test_stream.py": {
+        "size": 114450
+      },
+      "obspy/core/tests/test_trace.py": {
+        "size": 109899
+      },
+      "obspy/core/tests/test_utcdatetime.py": {
+        "size": 58435
+      },
+      "obspy/core/tests/test_util_attribdict.py": {
+        "size": 10434
+      },
+      "obspy/core/tests/test_util_base.py": {
+        "size": 4529
+      },
+      "obspy/core/tests/test_util_decorator.py": {
+        "size": 2200
+      },
+      "obspy/core/tests/test_util_misc.py": {
+        "size": 10074
+      },
+      "obspy/core/tests/test_util_testing.py": {
+        "size": 3675
+      },
+      "obspy/core/tests/test_util_types.py": {
+        "size": 5143
+      },
+      "obspy/core/tests/test_waveform_plugins.py": {
+        "size": 25488
+      },
+      "obspy/core/trace.py": {
+        "size": 123548
+      },
+      "obspy/core/utcdatetime.py": {
+        "size": 56171
+      },
+      "obspy/core/util/__init__.py": {
+        "size": 1676
+      },
+      "obspy/core/util/attribdict.py": {
+        "size": 6992
+      },
+      "obspy/core/util/base.py": {
+        "size": 31813
+      },
+      "obspy/core/util/decorator.py": {
+        "size": 10778
+      },
+      "obspy/core/util/deprecation_helpers.py": {
+        "size": 458
+      },
+      "obspy/core/util/libnames.py": {
+        "size": 1922
+      },
+      "obspy/core/util/misc.py": {
+        "size": 24639
+      },
+      "obspy/core/util/obspy_types.py": {
+        "size": 15162
+      },
+      "obspy/core/util/testing.py": {
+        "size": 17629
+      },
+      "obspy/core/util/version.py": {
+        "size": 8024
+      },
+      "obspy/geodetics/__init__.py": {
+        "size": 630
+      },
+      "obspy/geodetics/base.py": {
+        "size": 17949
+      },
+      "obspy/geodetics/flinnengdahl.py": {
+        "size": 5727
+      },
+      "obspy/geodetics/tests/__init__.py": {
+        "size": 56
+      },
+      "obspy/geodetics/tests/test_util_flinnengdahl.py": {
+        "size": 1575
+      },
+      "obspy/geodetics/tests/test_util_geodetics.py": {
+        "size": 14446
+      },
+      "obspy/imaging/README.txt": {
+        "size": 958
+      },
+      "obspy/imaging/__init__.py": {
+        "size": 6926
+      },
+      "obspy/imaging/beachball.py": {
+        "size": 33330
+      },
+      "obspy/imaging/cm.py": {
+        "size": 19975
+      },
+      "obspy/imaging/maps.py": {
+        "size": 20083
+      },
+      "obspy/imaging/mopad_wrapper.py": {
+        "size": 14102
+      },
+      "obspy/imaging/scripts/__init__.py": {
+        "size": 24
+      },
+      "obspy/imaging/scripts/mopad.py": {
+        "size": 196752
+      },
+      "obspy/imaging/scripts/plot.py": {
+        "size": 1701
+      },
+      "obspy/imaging/scripts/scan.py": {
+        "size": 33639
+      },
+      "obspy/imaging/source.py": {
+        "size": 24515
+      },
+      "obspy/imaging/spectrogram.py": {
+        "size": 7108
+      },
+      "obspy/imaging/tests/__init__.py": {
+        "size": 54
+      },
+      "obspy/imaging/tests/test_backend.py": {
+        "size": 776
+      },
+      "obspy/imaging/tests/test_beachball.py": {
+        "size": 12337
+      },
+      "obspy/imaging/tests/test_mopad.py": {
+        "size": 2134
+      },
+      "obspy/imaging/tests/test_mopad_script.py": {
+        "size": 9020
+      },
+      "obspy/imaging/tests/test_plot.py": {
+        "size": 1668
+      },
+      "obspy/imaging/tests/test_ppsd.py": {
+        "size": 2115
+      },
+      "obspy/imaging/tests/test_scan.py": {
+        "size": 11076
+      },
+      "obspy/imaging/tests/test_source.py": {
+        "size": 524
+      },
+      "obspy/imaging/tests/test_spectrogram.py": {
+        "size": 3817
+      },
+      "obspy/imaging/tests/test_waveform.py": {
+        "size": 18028
+      },
+      "obspy/imaging/util.py": {
+        "size": 9869
+      },
+      "obspy/imaging/waveform.py": {
+        "size": 64936
+      },
+      "obspy/io/__init__.py": {
+        "size": 24
+      },
+      "obspy/io/ah/README.txt": {
+        "size": 792
+      },
+      "obspy/io/ah/__init__.py": {
+        "size": 512
+      },
+      "obspy/io/ah/core.py": {
+        "size": 20287
+      },
+      "obspy/io/ah/tests/__init__.py": {
+        "size": 52
+      },
+      "obspy/io/ah/tests/data/TSG/Readme_TSG_response.txt": {
+        "size": 6070
+      },
+      "obspy/io/ah/tests/test_core.py": {
+        "size": 12719
+      },
+      "obspy/io/ah/tests/test_xdrlib.py": {
+        "size": 4645
+      },
+      "obspy/io/ah/xdrlib.py": {
+        "size": 8448
+      },
+      "obspy/io/alsep/__init__.py": {
+        "size": 1568
+      },
+      "obspy/io/alsep/assign.py": {
+        "size": 2578
+      },
+      "obspy/io/alsep/core.py": {
+        "size": 16157
+      },
+      "obspy/io/alsep/define.py": {
+        "size": 3042
+      },
+      "obspy/io/alsep/pse/__init__.py": {
+        "size": 24
+      },
+      "obspy/io/alsep/pse/define.py": {
+        "size": 2111
+      },
+      "obspy/io/alsep/pse/frame.py": {
+        "size": 2784
+      },
+      "obspy/io/alsep/pse/parser.py": {
+        "size": 1648
+      },
+      "obspy/io/alsep/pse/record.py": {
+        "size": 3269
+      },
+      "obspy/io/alsep/pse/tape.py": {
+        "size": 1658
+      },
+      "obspy/io/alsep/tests/__init__.py": {
+        "size": 55
+      },
+      "obspy/io/alsep/tests/test_alsep.py": {
+        "size": 4978
+      },
+      "obspy/io/alsep/util.py": {
+        "size": 1789
+      },
+      "obspy/io/alsep/wt/__init__.py": {
+        "size": 24
+      },
+      "obspy/io/alsep/wt/define.py": {
+        "size": 687
+      },
+      "obspy/io/alsep/wt/frame.py": {
+        "size": 5071
+      },
+      "obspy/io/alsep/wt/parser.py": {
+        "size": 1787
+      },
+      "obspy/io/alsep/wt/record.py": {
+        "size": 3558
+      },
+      "obspy/io/alsep/wt/tape.py": {
+        "size": 2005
+      },
+      "obspy/io/arclink/__init__.py": {
+        "size": 396
+      },
+      "obspy/io/arclink/inventory.py": {
+        "size": 34581
+      },
+      "obspy/io/arclink/tests/__init__.py": {
+        "size": 57
+      },
+      "obspy/io/arclink/tests/test_inventory_xml.py": {
+        "size": 6242
+      },
+      "obspy/io/ascii/__init__.py": {
+        "size": 388
+      },
+      "obspy/io/ascii/core.py": {
+        "size": 17535
+      },
+      "obspy/io/ascii/docs/SimpleASCIITimeseries.txt": {
+        "size": 2326
+      },
+      "obspy/io/ascii/tests/__init__.py": {
+        "size": 55
+      },
+      "obspy/io/ascii/tests/data/mseed2ascii_miniseed_record.txt": {
+        "size": 14873
+      },
+      "obspy/io/ascii/tests/test_ascii.py": {
+        "size": 29183
+      },
+      "obspy/io/cmtsolution/README.txt": {
+        "size": 826
+      },
+      "obspy/io/cmtsolution/__init__.py": {
+        "size": 1687
+      },
+      "obspy/io/cmtsolution/core.py": {
+        "size": 17730
+      },
+      "obspy/io/cmtsolution/tests/__init__.py": {
+        "size": 83
+      },
+      "obspy/io/cmtsolution/tests/test_core.py": {
+        "size": 7059
+      },
+      "obspy/io/cnv/README.txt": {
+        "size": 773
+      },
+      "obspy/io/cnv/__init__.py": {
+        "size": 481
+      },
+      "obspy/io/cnv/core.py": {
+        "size": 6991
+      },
+      "obspy/io/cnv/docs/cnv_file_format.txt": {
+        "size": 1857
+      },
+      "obspy/io/cnv/tests/__init__.py": {
+        "size": 53
+      },
+      "obspy/io/cnv/tests/test_core.py": {
+        "size": 2270
+      },
+      "obspy/io/css/README.txt": {
+        "size": 887
+      },
+      "obspy/io/css/__init__.py": {
+        "size": 444
+      },
+      "obspy/io/css/contrib/css28fix.py": {
+        "size": 1794
+      },
+      "obspy/io/css/contrib/css2asc.py": {
+        "size": 3567
+      },
+      "obspy/io/css/core.py": {
+        "size": 6840
+      },
+      "obspy/io/css/station.py": {
+        "size": 5847
+      },
+      "obspy/io/css/tests/__init__.py": {
+        "size": 53
+      },
+      "obspy/io/css/tests/test_core.py": {
+        "size": 4779
+      },
+      "obspy/io/css/tests/test_station.py": {
+        "size": 1858
+      },
+      "obspy/io/csv/__init__.py": {
+        "size": 5539
+      },
+      "obspy/io/csv/core.py": {
+        "size": 20438
+      },
+      "obspy/io/csv/tests/__init__.py": {
+        "size": 29
+      },
+      "obspy/io/csv/tests/data/events.txt": {
+        "size": 315
+      },
+      "obspy/io/csv/tests/test_csv.py": {
+        "size": 7639
+      },
+      "obspy/io/cybershake/README.txt": {
+        "size": 810
+      },
+      "obspy/io/cybershake/__init__.py": {
+        "size": 1815
+      },
+      "obspy/io/cybershake/core.py": {
+        "size": 4368
+      },
+      "obspy/io/cybershake/docs/cybershake_format.txt": {
+        "size": 2865
+      },
+      "obspy/io/cybershake/tests/test_core.py": {
+        "size": 1898
+      },
+      "obspy/io/dmx/__init__.py": {
+        "size": 1958
+      },
+      "obspy/io/dmx/core.py": {
+        "size": 6005
+      },
+      "obspy/io/dmx/tests/__init__.py": {
+        "size": 29
+      },
+      "obspy/io/dmx/tests/test_core.py": {
+        "size": 2543
+      },
+      "obspy/io/focmec/__init__.py": {
+        "size": 374
+      },
+      "obspy/io/focmec/core.py": {
+        "size": 13889
+      },
+      "obspy/io/focmec/tests/__init__.py": {
+        "size": 56
+      },
+      "obspy/io/focmec/tests/test_core.py": {
+        "size": 8749
+      },
+      "obspy/io/gcf/__init__.py": {
+        "size": 5136
+      },
+      "obspy/io/gcf/core.py": {
+        "size": 36300
+      },
+      "obspy/io/gcf/tests/__init__.py": {
+        "size": 53
+      },
+      "obspy/io/gcf/tests/test_core.py": {
+        "size": 12583
+      },
+      "obspy/io/gse2/README.txt": {
+        "size": 956
+      },
+      "obspy/io/gse2/__init__.py": {
+        "size": 7220
+      },
+      "obspy/io/gse2/bulletin.py": {
+        "size": 42582
+      },
+      "obspy/io/gse2/core.py": {
+        "size": 5383
+      },
+      "obspy/io/gse2/libgse1.py": {
+        "size": 4097
+      },
+      "obspy/io/gse2/libgse2.py": {
+        "size": 19507
+      },
+      "obspy/io/gse2/paz.py": {
+        "size": 4991
+      },
+      "obspy/io/gse2/tests/__init__.py": {
+        "size": 54
+      },
+      "obspy/io/gse2/tests/data/bulletin/event.txt": {
+        "size": 2974
+      },
+      "obspy/io/gse2/tests/data/bulletin/gse_2.0_2_begins.txt": {
+        "size": 3710
+      },
+      "obspy/io/gse2/tests/data/bulletin/gse_2.0_2_events.txt": {
+        "size": 3562
+      },
+      "obspy/io/gse2/tests/data/bulletin/gse_2.0_incomplete.txt": {
+        "size": 1185
+      },
+      "obspy/io/gse2/tests/data/bulletin/gse_2.0_non_standard.txt": {
+        "size": 3998
+      },
+      "obspy/io/gse2/tests/data/bulletin/gse_2.0_standard.txt": {
+        "size": 1990
+      },
+      "obspy/io/gse2/tests/test_bulletin.py": {
+        "size": 30206
+      },
+      "obspy/io/gse2/tests/test_core.py": {
+        "size": 13372
+      },
+      "obspy/io/gse2/tests/test_libgse1.py": {
+        "size": 1028
+      },
+      "obspy/io/gse2/tests/test_libgse2.py": {
+        "size": 9917
+      },
+      "obspy/io/gse2/tests/test_paz.py": {
+        "size": 1828
+      },
+      "obspy/io/hypodd/__init__.py": {
+        "size": 823
+      },
+      "obspy/io/hypodd/pha.py": {
+        "size": 9117
+      },
+      "obspy/io/hypodd/tests/__init__.py": {
+        "size": 78
+      },
+      "obspy/io/hypodd/tests/test_pha.py": {
+        "size": 5980
+      },
+      "obspy/io/iaspei/__init__.py": {
+        "size": 526
+      },
+      "obspy/io/iaspei/core.py": {
+        "size": 29360
+      },
+      "obspy/io/iaspei/tests/__init__.py": {
+        "size": 78
+      },
+      "obspy/io/iaspei/tests/test_core.py": {
+        "size": 6812
+      },
+      "obspy/io/iaspei/util.py": {
+        "size": 1766
+      },
+      "obspy/io/json/__init__.py": {
+        "size": 736
+      },
+      "obspy/io/json/core.py": {
+        "size": 1946
+      },
+      "obspy/io/json/default.py": {
+        "size": 2591
+      },
+      "obspy/io/json/tests/__init__.py": {
+        "size": 54
+      },
+      "obspy/io/json/tests/test_json.py": {
+        "size": 2373
+      },
+      "obspy/io/kinemetrics/README.txt": {
+        "size": 959
+      },
+      "obspy/io/kinemetrics/__init__.py": {
+        "size": 3262
+      },
+      "obspy/io/kinemetrics/core.py": {
+        "size": 2061
+      },
+      "obspy/io/kinemetrics/evt.py": {
+        "size": 15151
+      },
+      "obspy/io/kinemetrics/evt_base.py": {
+        "size": 6542
+      },
+      "obspy/io/kinemetrics/tests/__init__.py": {
+        "size": 83
+      },
+      "obspy/io/kinemetrics/tests/test_core.py": {
+        "size": 15406
+      },
+      "obspy/io/kml/__init__.py": {
+        "size": 981
+      },
+      "obspy/io/kml/core.py": {
+        "size": 13201
+      },
+      "obspy/io/kml/tests/__init__.py": {
+        "size": 53
+      },
+      "obspy/io/kml/tests/test_kml.py": {
+        "size": 1474
+      },
+      "obspy/io/mseed/README.txt": {
+        "size": 988
+      },
+      "obspy/io/mseed/__init__.py": {
+        "size": 7082
+      },
+      "obspy/io/mseed/core.py": {
+        "size": 42507
+      },
+      "obspy/io/mseed/headers.py": {
+        "size": 27266
+      },
+      "obspy/io/mseed/msstruct.py": {
+        "size": 5969
+      },
+      "obspy/io/mseed/scripts/__init__.py": {
+        "size": 24
+      },
+      "obspy/io/mseed/scripts/recordanalyzer.py": {
+        "size": 21372
+      },
+      "obspy/io/mseed/src/libmseed/INSTALL.md": {
+        "size": 1377
+      },
+      "obspy/io/mseed/src/libmseed/LICENSE.txt": {
+        "size": 42994
+      },
+      "obspy/io/mseed/src/libmseed/README.md": {
+        "size": 2306
+      },
+      "obspy/io/mseed/tests/__init__.py": {
+        "size": 55
+      },
+      "obspy/io/mseed/tests/test_mseed_reading_and_writing.py": {
+        "size": 67655
+      },
+      "obspy/io/mseed/tests/test_mseed_special_issues.py": {
+        "size": 47598
+      },
+      "obspy/io/mseed/tests/test_mseed_util.py": {
+        "size": 59063
+      },
+      "obspy/io/mseed/tests/test_recordanalyzer.py": {
+        "size": 10953
+      },
+      "obspy/io/mseed/util.py": {
+        "size": 78173
+      },
+      "obspy/io/ndk/README.txt": {
+        "size": 786
+      },
+      "obspy/io/ndk/__init__.py": {
+        "size": 4154
+      },
+      "obspy/io/ndk/core.py": {
+        "size": 23994
+      },
+      "obspy/io/ndk/docs/ndk.txt": {
+        "size": 7015
+      },
+      "obspy/io/ndk/tests/__init__.py": {
+        "size": 53
+      },
+      "obspy/io/ndk/tests/test_ndk.py": {
+        "size": 12760
+      },
+      "obspy/io/nied/__init__.py": {
+        "size": 5603
+      },
+      "obspy/io/nied/fnetmt.py": {
+        "size": 8799
+      },
+      "obspy/io/nied/knet.py": {
+        "size": 9465
+      },
+      "obspy/io/nied/tests/__init__.py": {
+        "size": 54
+      },
+      "obspy/io/nied/tests/test_fnetmt_reading.py": {
+        "size": 2164
+      },
+      "obspy/io/nied/tests/test_knet_reading.py": {
+        "size": 3541
+      },
+      "obspy/io/nied/util.py": {
+        "size": 898
+      },
+      "obspy/io/nlloc/README.txt": {
+        "size": 762
+      },
+      "obspy/io/nlloc/__init__.py": {
+        "size": 5420
+      },
+      "obspy/io/nlloc/core.py": {
+        "size": 20161
+      },
+      "obspy/io/nlloc/docs/nlloc_hyp_file.txt": {
+        "size": 23927
+      },
+      "obspy/io/nlloc/docs/nlloc_obs_file.txt": {
+        "size": 3082
+      },
+      "obspy/io/nlloc/tests/__init__.py": {
+        "size": 55
+      },
+      "obspy/io/nlloc/tests/test_core.py": {
+        "size": 16509
+      },
+      "obspy/io/nlloc/tests/test_util.py": {
+        "size": 1857
+      },
+      "obspy/io/nlloc/util.py": {
+        "size": 1766
+      },
+      "obspy/io/nordic/__init__.py": {
+        "size": 490
+      },
+      "obspy/io/nordic/core.py": {
+        "size": 104815
+      },
+      "obspy/io/nordic/ellipse.py": {
+        "size": 21071
+      },
+      "obspy/io/nordic/tests/__init__.py": {
+        "size": 56
+      },
+      "obspy/io/nordic/tests/test_nordic.py": {
+        "size": 64711
+      },
+      "obspy/io/nordic/utils.py": {
+        "size": 8672
+      },
+      "obspy/io/pdas/__init__.py": {
+        "size": 517
+      },
+      "obspy/io/pdas/core.py": {
+        "size": 2935
+      },
+      "obspy/io/pdas/tests/__init__.py": {
+        "size": 54
+      },
+      "obspy/io/pdas/tests/test_core.py": {
+        "size": 1696
+      },
+      "obspy/io/pde/README.txt": {
+        "size": 488
+      },
+      "obspy/io/pde/__init__.py": {
+        "size": 649
+      },
+      "obspy/io/pde/docs/mchedr.txt": {
+        "size": 30163
+      },
+      "obspy/io/pde/mchedr.py": {
+        "size": 45582
+      },
+      "obspy/io/pde/tests/__init__.py": {
+        "size": 53
+      },
+      "obspy/io/pde/tests/test_mchedr.py": {
+        "size": 12609
+      },
+      "obspy/io/quakeml/__init__.py": {
+        "size": 319
+      },
+      "obspy/io/quakeml/core.py": {
+        "size": 80544
+      },
+      "obspy/io/quakeml/tests/__init__.py": {
+        "size": 57
+      },
+      "obspy/io/quakeml/tests/test_quakeml.py": {
+        "size": 48366
+      },
+      "obspy/io/reftek/__init__.py": {
+        "size": 8727
+      },
+      "obspy/io/reftek/core.py": {
+        "size": 19066
+      },
+      "obspy/io/reftek/packet.py": {
+        "size": 14972
+      },
+      "obspy/io/reftek/tests/__init__.py": {
+        "size": 56
+      },
+      "obspy/io/reftek/tests/test_core.py": {
+        "size": 26260
+      },
+      "obspy/io/reftek/util.py": {
+        "size": 4127
+      },
+      "obspy/io/rg16/__init__.py": {
+        "size": 2724
+      },
+      "obspy/io/rg16/core.py": {
+        "size": 30792
+      },
+      "obspy/io/rg16/tests/__init__.py": {
+        "size": 30
+      },
+      "obspy/io/rg16/tests/test_read_rg16.py": {
+        "size": 22419
+      },
+      "obspy/io/rg16/tests/test_util.py": {
+        "size": 1745
+      },
+      "obspy/io/rg16/util.py": {
+        "size": 7117
+      },
+      "obspy/io/sac/README.txt": {
+        "size": 886
+      },
+      "obspy/io/sac/__init__.py": {
+        "size": 2872
+      },
+      "obspy/io/sac/arrayio.py": {
+        "size": 24052
+      },
+      "obspy/io/sac/core.py": {
+        "size": 20229
+      },
+      "obspy/io/sac/header.py": {
+        "size": 15982
+      },
+      "obspy/io/sac/sacpz.py": {
+        "size": 16001
+      },
+      "obspy/io/sac/sactrace.py": {
+        "size": 54160
+      },
+      "obspy/io/sac/tests/__init__.py": {
+        "size": 53
+      },
+      "obspy/io/sac/tests/test_core.py": {
+        "size": 38409
+      },
+      "obspy/io/sac/tests/test_sacpz.py": {
+        "size": 10940
+      },
+      "obspy/io/sac/tests/test_sactrace.py": {
+        "size": 18548
+      },
+      "obspy/io/sac/util.py": {
+        "size": 16598
+      },
+      "obspy/io/scardec/README.txt": {
+        "size": 793
+      },
+      "obspy/io/scardec/__init__.py": {
+        "size": 1693
+      },
+      "obspy/io/scardec/core.py": {
+        "size": 15670
+      },
+      "obspy/io/scardec/tests/__init__.py": {
+        "size": 79
+      },
+      "obspy/io/scardec/tests/test_core.py": {
+        "size": 6266
+      },
+      "obspy/io/seg2/README.txt": {
+        "size": 827
+      },
+      "obspy/io/seg2/__init__.py": {
+        "size": 464
+      },
+      "obspy/io/seg2/header.py": {
+        "size": 886
+      },
+      "obspy/io/seg2/seg2.py": {
+        "size": 15326
+      },
+      "obspy/io/seg2/tests/__init__.py": {
+        "size": 54
+      },
+      "obspy/io/seg2/tests/test_seg2.py": {
+        "size": 4869
+      },
+      "obspy/io/segy/README.txt": {
+        "size": 860
+      },
+      "obspy/io/segy/__init__.py": {
+        "size": 10386
+      },
+      "obspy/io/segy/core.py": {
+        "size": 30693
+      },
+      "obspy/io/segy/header.py": {
+        "size": 8862
+      },
+      "obspy/io/segy/pack.py": {
+        "size": 5041
+      },
+      "obspy/io/segy/segy.py": {
+        "size": 60227
+      },
+      "obspy/io/segy/tests/__init__.py": {
+        "size": 635
+      },
+      "obspy/io/segy/tests/data/readme.txt": {
+        "size": 1175
+      },
+      "obspy/io/segy/tests/header.py": {
+        "size": 3187
+      },
+      "obspy/io/segy/tests/test_core.py": {
+        "size": 28182
+      },
+      "obspy/io/segy/tests/test_segy.py": {
+        "size": 33755
+      },
+      "obspy/io/segy/tests/test_su.py": {
+        "size": 4547
+      },
+      "obspy/io/segy/unpack.py": {
+        "size": 4840
+      },
+      "obspy/io/segy/util.py": {
+        "size": 1616
+      },
+      "obspy/io/seisan/README.txt": {
+        "size": 774
+      },
+      "obspy/io/seisan/__init__.py": {
+        "size": 1963
+      },
+      "obspy/io/seisan/core.py": {
+        "size": 9351
+      },
+      "obspy/io/seisan/tests/__init__.py": {
+        "size": 56
+      },
+      "obspy/io/seisan/tests/test_core.py": {
+        "size": 7693
+      },
+      "obspy/io/seiscomp/__init__.py": {
+        "size": 619
+      },
+      "obspy/io/seiscomp/core.py": {
+        "size": 4237
+      },
+      "obspy/io/seiscomp/event.py": {
+        "size": 4918
+      },
+      "obspy/io/seiscomp/inventory.py": {
+        "size": 38400
+      },
+      "obspy/io/seiscomp/tests/__init__.py": {
+        "size": 58
+      },
+      "obspy/io/seiscomp/tests/test_core.py": {
+        "size": 1349
+      },
+      "obspy/io/seiscomp/tests/test_event.py": {
+        "size": 16580
+      },
+      "obspy/io/seiscomp/tests/test_inventory.py": {
+        "size": 12758
+      },
+      "obspy/io/sh/README.txt": {
+        "size": 903
+      },
+      "obspy/io/sh/__init__.py": {
+        "size": 2446
+      },
+      "obspy/io/sh/core.py": {
+        "size": 23333
+      },
+      "obspy/io/sh/evt.py": {
+        "size": 8144
+      },
+      "obspy/io/sh/tests/__init__.py": {
+        "size": 52
+      },
+      "obspy/io/sh/tests/test_core.py": {
+        "size": 12052
+      },
+      "obspy/io/sh/tests/test_evt.py": {
+        "size": 3613
+      },
+      "obspy/io/shapefile/__init__.py": {
+        "size": 1748
+      },
+      "obspy/io/shapefile/core.py": {
+        "size": 16880
+      },
+      "obspy/io/shapefile/tests/__init__.py": {
+        "size": 59
+      },
+      "obspy/io/shapefile/tests/test_core.py": {
+        "size": 19819
+      },
+      "obspy/io/stationtxt/__init__.py": {
+        "size": 1191
+      },
+      "obspy/io/stationtxt/core.py": {
+        "size": 15309
+      },
+      "obspy/io/stationtxt/tests/__init__.py": {
+        "size": 60
+      },
+      "obspy/io/stationtxt/tests/data/channel_level_fdsn.txt": {
+        "size": 1186
+      },
+      "obspy/io/stationtxt/tests/data/channel_level_fdsn_faulty_header.txt": {
+        "size": 1178
+      },
+      "obspy/io/stationtxt/tests/data/channel_level_fdsn_no_endtime.txt": {
+        "size": 1072
+      },
+      "obspy/io/stationtxt/tests/data/log_channel_fdsn.txt": {
+        "size": 299
+      },
+      "obspy/io/stationtxt/tests/data/network_level_fdsn.txt": {
+        "size": 232
+      },
+      "obspy/io/stationtxt/tests/data/network_level_fdsn_no_endtime.txt": {
+        "size": 194
+      },
+      "obspy/io/stationtxt/tests/data/station_level_fdsn.txt": {
+        "size": 376
+      },
+      "obspy/io/stationtxt/tests/data/station_level_fdsn_no_endtime.txt": {
+        "size": 319
+      },
+      "obspy/io/stationtxt/tests/data/unicode_example_fdsn.txt": {
+        "size": 179
+      },
+      "obspy/io/stationtxt/tests/test_station_text_parsing.py": {
+        "size": 37536
+      },
+      "obspy/io/stationxml/__init__.py": {
+        "size": 331
+      },
+      "obspy/io/stationxml/core.py": {
+        "size": 72126
+      },
+      "obspy/io/stationxml/data/Variations-FDSNSXML-SEED.txt": {
+        "size": 3821
+      },
+      "obspy/io/stationxml/tests/__init__.py": {
+        "size": 60
+      },
+      "obspy/io/stationxml/tests/test_stationxml.py": {
+        "size": 59594
+      },
+      "obspy/io/wav/README.txt": {
+        "size": 843
+      },
+      "obspy/io/wav/__init__.py": {
+        "size": 2143
+      },
+      "obspy/io/wav/core.py": {
+        "size": 5935
+      },
+      "obspy/io/wav/tests/__init__.py": {
+        "size": 53
+      },
+      "obspy/io/wav/tests/test_core.py": {
+        "size": 4656
+      },
+      "obspy/io/win/README.txt": {
+        "size": 1273
+      },
+      "obspy/io/win/__init__.py": {
+        "size": 807
+      },
+      "obspy/io/win/core.py": {
+        "size": 6459
+      },
+      "obspy/io/win/tests/__init__.py": {
+        "size": 53
+      },
+      "obspy/io/win/tests/test_core.py": {
+        "size": 2657
+      },
+      "obspy/io/xseed/README.txt": {
+        "size": 920
+      },
+      "obspy/io/xseed/__init__.py": {
+        "size": 3375
+      },
+      "obspy/io/xseed/blockette/__init__.py": {
+        "size": 1133
+      },
+      "obspy/io/xseed/blockette/blockette.py": {
+        "size": 5816
+      },
+      "obspy/io/xseed/blockette/blockette010.py": {
+        "size": 1408
+      },
+      "obspy/io/xseed/blockette/blockette011.py": {
+        "size": 870
+      },
+      "obspy/io/xseed/blockette/blockette012.py": {
+        "size": 1136
+      },
+      "obspy/io/xseed/blockette/blockette030.py": {
+        "size": 1435
+      },
+      "obspy/io/xseed/blockette/blockette031.py": {
+        "size": 770
+      },
+      "obspy/io/xseed/blockette/blockette032.py": {
+        "size": 705
+      },
+      "obspy/io/xseed/blockette/blockette033.py": {
+        "size": 463
+      },
+      "obspy/io/xseed/blockette/blockette034.py": {
+        "size": 620
+      },
+      "obspy/io/xseed/blockette/blockette041.py": {
+        "size": 5842
+      },
+      "obspy/io/xseed/blockette/blockette043.py": {
+        "size": 5921
+      },
+      "obspy/io/xseed/blockette/blockette044.py": {
+        "size": 4505
+      },
+      "obspy/io/xseed/blockette/blockette047.py": {
+        "size": 2073
+      },
+      "obspy/io/xseed/blockette/blockette048.py": {
+        "size": 3100
+      },
+      "obspy/io/xseed/blockette/blockette050.py": {
+        "size": 1314
+      },
+      "obspy/io/xseed/blockette/blockette051.py": {
+        "size": 561
+      },
+      "obspy/io/xseed/blockette/blockette052.py": {
+        "size": 1924
+      },
+      "obspy/io/xseed/blockette/blockette053.py": {
+        "size": 6321
+      },
+      "obspy/io/xseed/blockette/blockette054.py": {
+        "size": 5571
+      },
+      "obspy/io/xseed/blockette/blockette055.py": {
+        "size": 3764
+      },
+      "obspy/io/xseed/blockette/blockette057.py": {
+        "size": 2320
+      },
+      "obspy/io/xseed/blockette/blockette058.py": {
+        "size": 4922
+      },
+      "obspy/io/xseed/blockette/blockette059.py": {
+        "size": 564
+      },
+      "obspy/io/xseed/blockette/blockette060.py": {
+        "size": 8306
+      },
+      "obspy/io/xseed/blockette/blockette061.py": {
+        "size": 3483
+      },
+      "obspy/io/xseed/blockette/blockette062.py": {
+        "size": 6463
+      },
+      "obspy/io/xseed/core.py": {
+        "size": 16200
+      },
+      "obspy/io/xseed/fields.py": {
+        "size": 20432
+      },
+      "obspy/io/xseed/parser.py": {
+        "size": 111617
+      },
+      "obspy/io/xseed/scripts/__init__.py": {
+        "size": 24
+      },
+      "obspy/io/xseed/scripts/dataless2resp.py": {
+        "size": 2391
+      },
+      "obspy/io/xseed/scripts/dataless2xseed.py": {
+        "size": 3340
+      },
+      "obspy/io/xseed/scripts/xseed2dataless.py": {
+        "size": 2835
+      },
+      "obspy/io/xseed/tests/__init__.py": {
+        "size": 55
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/README.txt": {
+        "size": 1437
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette010.txt": {
+        "size": 1241
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette011.txt": {
+        "size": 717
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette012.txt": {
+        "size": 478
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette030.txt": {
+        "size": 606
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette031.txt": {
+        "size": 380
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette032.txt": {
+        "size": 417
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette033.txt": {
+        "size": 326
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette034.txt": {
+        "size": 295
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette041.txt": {
+        "size": 700
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette043.txt": {
+        "size": 5013
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette044.txt": {
+        "size": 1459
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette047.txt": {
+        "size": 949
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette050.txt": {
+        "size": 915
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette051.txt": {
+        "size": 838
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette052.txt": {
+        "size": 9253
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette053.txt": {
+        "size": 2672
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette054.txt": {
+        "size": 686
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette055.txt": {
+        "size": 1450
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette057.txt": {
+        "size": 439
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette058.txt": {
+        "size": 368
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette059.txt": {
+        "size": 446
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette060.txt": {
+        "size": 2216
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette061.txt": {
+        "size": 874
+      },
+      "obspy/io/xseed/tests/data/blockette-tests/blockette062.txt": {
+        "size": 1559
+      },
+      "obspy/io/xseed/tests/test_blockettes.py": {
+        "size": 13210
+      },
+      "obspy/io/xseed/tests/test_core.py": {
+        "size": 34438
+      },
+      "obspy/io/xseed/tests/test_fields.py": {
+        "size": 6719
+      },
+      "obspy/io/xseed/tests/test_parser.py": {
+        "size": 37419
+      },
+      "obspy/io/xseed/tests/test_scripts.py": {
+        "size": 4397
+      },
+      "obspy/io/xseed/tests/test_utils.py": {
+        "size": 2661
+      },
+      "obspy/io/xseed/utils.py": {
+        "size": 6755
+      },
+      "obspy/io/y/README.txt": {
+        "size": 809
+      },
+      "obspy/io/y/__init__.py": {
+        "size": 494
+      },
+      "obspy/io/y/core.py": {
+        "size": 16692
+      },
+      "obspy/io/y/tests/__init__.py": {
+        "size": 51
+      },
+      "obspy/io/y/tests/test_core.py": {
+        "size": 1761
+      },
+      "obspy/io/zmap/README.txt": {
+        "size": 807
+      },
+      "obspy/io/zmap/__init__.py": {
+        "size": 4293
+      },
+      "obspy/io/zmap/core.py": {
+        "size": 14217
+      },
+      "obspy/io/zmap/tests/__init__.py": {
+        "size": 54
+      },
+      "obspy/io/zmap/tests/data/templates.txt": {
+        "size": 206
+      },
+      "obspy/io/zmap/tests/data/zmap_events.txt": {
+        "size": 138
+      },
+      "obspy/io/zmap/tests/test_zmap.py": {
+        "size": 13975
+      },
+      "obspy/lib/__init__.py": {
+        "size": 225
+      },
+      "obspy/pytest.ini": {
+        "size": 1258
+      },
+      "obspy/realtime/README.txt": {
+        "size": 1292
+      },
+      "obspy/realtime/__init__.py": {
+        "size": 965
+      },
+      "obspy/realtime/rtmemory.py": {
+        "size": 3063
+      },
+      "obspy/realtime/rttrace.py": {
+        "size": 15749
+      },
+      "obspy/realtime/signal.py": {
+        "size": 21322
+      },
+      "obspy/realtime/tests/__init__.py": {
+        "size": 55
+      },
+      "obspy/realtime/tests/test_rttrace.py": {
+        "size": 7571
+      },
+      "obspy/realtime/tests/test_signal.py": {
+        "size": 9874
+      },
+      "obspy/scripts/__init__.py": {
+        "size": 24
+      },
+      "obspy/scripts/flinnengdahl.py": {
+        "size": 1303
+      },
+      "obspy/scripts/print.py": {
+        "size": 1462
+      },
+      "obspy/scripts/reftekrescue.py": {
+        "size": 8307
+      },
+      "obspy/scripts/runtests.py": {
+        "size": 4992
+      },
+      "obspy/scripts/sds_html_report.py": {
+        "size": 19030
+      },
+      "obspy/scripts/tests/__init__.py": {
+        "size": 54
+      },
+      "obspy/scripts/tests/test_print.py": {
+        "size": 1130
+      },
+      "obspy/signal/README.txt": {
+        "size": 992
+      },
+      "obspy/signal/__init__.py": {
+        "size": 6788
+      },
+      "obspy/signal/array_analysis.py": {
+        "size": 40721
+      },
+      "obspy/signal/calibration.py": {
+        "size": 9263
+      },
+      "obspy/signal/cpxtrace.py": {
+        "size": 12490
+      },
+      "obspy/signal/cross_correlation.py": {
+        "size": 47401
+      },
+      "obspy/signal/data/wf_metadata_schema.json": {
+        "size": 15994
+      },
+      "obspy/signal/detrend.py": {
+        "size": 5408
+      },
+      "obspy/signal/differentiate_and_integrate.py": {
+        "size": 2172
+      },
+      "obspy/signal/evrespwrapper.py": {
+        "size": 6430
+      },
+      "obspy/signal/filter.py": {
+        "size": 17417
+      },
+      "obspy/signal/freqattributes.py": {
+        "size": 15290
+      },
+      "obspy/signal/headers.py": {
+        "size": 6641
+      },
+      "obspy/signal/hoctavbands.py": {
+        "size": 1861
+      },
+      "obspy/signal/interpolation.py": {
+        "size": 15992
+      },
+      "obspy/signal/invsim.py": {
+        "size": 31858
+      },
+      "obspy/signal/konnoohmachismoothing.py": {
+        "size": 11122
+      },
+      "obspy/signal/polarization.py": {
+        "size": 21872
+      },
+      "obspy/signal/quality_control.py": {
+        "size": 24367
+      },
+      "obspy/signal/regression.py": {
+        "size": 2992
+      },
+      "obspy/signal/rotate.py": {
+        "size": 9525
+      },
+      "obspy/signal/spectral_estimation.py": {
+        "size": 97383
+      },
+      "obspy/signal/tests/__init__.py": {
+        "size": 53
+      },
+      "obspy/signal/tests/test_array_analysis.py": {
+        "size": 7911
+      },
+      "obspy/signal/tests/test_calibration.py": {
+        "size": 5524
+      },
+      "obspy/signal/tests/test_cpxtrace.py": {
+        "size": 3821
+      },
+      "obspy/signal/tests/test_cross_correlation.py": {
+        "size": 25896
+      },
+      "obspy/signal/tests/test_detrend.py": {
+        "size": 2385
+      },
+      "obspy/signal/tests/test_differentiate_and_integrate.py": {
+        "size": 1725
+      },
+      "obspy/signal/tests/test_filter.py": {
+        "size": 11832
+      },
+      "obspy/signal/tests/test_freqattributes.py": {
+        "size": 5473
+      },
+      "obspy/signal/tests/test_hoctavbands.py": {
+        "size": 3289
+      },
+      "obspy/signal/tests/test_interpolation.py": {
+        "size": 4523
+      },
+      "obspy/signal/tests/test_invsim.py": {
+        "size": 21249
+      },
+      "obspy/signal/tests/test_konnoohmachi.py": {
+        "size": 6535
+      },
+      "obspy/signal/tests/test_polarization.py": {
+        "size": 7857
+      },
+      "obspy/signal/tests/test_quality_control.py": {
+        "size": 40664
+      },
+      "obspy/signal/tests/test_regression.py": {
+        "size": 2311
+      },
+      "obspy/signal/tests/test_rotate.py": {
+        "size": 20412
+      },
+      "obspy/signal/tests/test_sonic.py": {
+        "size": 9199
+      },
+      "obspy/signal/tests/test_spectral_estimation.py": {
+        "size": 40734
+      },
+      "obspy/signal/tests/test_stream.py": {
+        "size": 8389
+      },
+      "obspy/signal/tests/test_tf_misfit.py": {
+        "size": 11424
+      },
+      "obspy/signal/tests/test_trace.py": {
+        "size": 7946
+      },
+      "obspy/signal/tests/test_trigger.py": {
+        "size": 30345
+      },
+      "obspy/signal/tf_misfit.py": {
+        "size": 60038
+      },
+      "obspy/signal/trigger.py": {
+        "size": 35483
+      },
+      "obspy/signal/util.py": {
+        "size": 11472
+      },
+      "obspy/taup/README.txt": {
+        "size": 628
+      },
+      "obspy/taup/__init__.py": {
+        "size": 21536
+      },
+      "obspy/taup/c_wrappers.py": {
+        "size": 2562
+      },
+      "obspy/taup/data/README.txt": {
+        "size": 81
+      },
+      "obspy/taup/helper_classes.py": {
+        "size": 5338
+      },
+      "obspy/taup/ray_paths.py": {
+        "size": 5286
+      },
+      "obspy/taup/seismic_phase.py": {
+        "size": 86355
+      },
+      "obspy/taup/slowness_layer.py": {
+        "size": 14075
+      },
+      "obspy/taup/slowness_model.py": {
+        "size": 86201
+      },
+      "obspy/taup/tau.py": {
+        "size": 53012
+      },
+      "obspy/taup/tau_branch.py": {
+        "size": 23097
+      },
+      "obspy/taup/tau_model.py": {
+        "size": 29713
+      },
+      "obspy/taup/taup_create.py": {
+        "size": 7560
+      },
+      "obspy/taup/taup_geo.py": {
+        "size": 13082
+      },
+      "obspy/taup/taup_path.py": {
+        "size": 887
+      },
+      "obspy/taup/taup_pierce.py": {
+        "size": 3218
+      },
+      "obspy/taup/taup_time.py": {
+        "size": 4210
+      },
+      "obspy/taup/tests/__init__.py": {
+        "size": 51
+      },
+      "obspy/taup/tests/data/TauP_test_data/ak135_PKIKP.txt": {
+        "size": 8275
+      },
+      "obspy/taup/tests/data/TauP_test_data/ak135_P_deep.txt": {
+        "size": 16047
+      },
+      "obspy/taup/tests/data/TauP_test_data/ak135_P_shallow.txt": {
+        "size": 14480
+      },
+      "obspy/taup/tests/data/TauP_test_data/ak135_PcP.txt": {
+        "size": 11170
+      },
+      "obspy/taup/tests/data/TauP_test_data/ak135_S_deep.txt": {
+        "size": 13691
+      },
+      "obspy/taup/tests/data/TauP_test_data/ak135_S_shallow.txt": {
+        "size": 15244
+      },
+      "obspy/taup/tests/data/TauP_test_data/ak135_ScP.txt": {
+        "size": 7378
+      },
+      "obspy/taup/tests/data/TauP_test_data/ak135_ScS.txt": {
+        "size": 11606
+      },
+      "obspy/taup/tests/data/TauP_test_data/ak135_surface_waves_table.txt": {
+        "size": 18344
+      },
+      "obspy/taup/tests/data/TauP_test_data/buried_receivers.txt": {
+        "size": 529
+      },
+      "obspy/taup/tests/data/TauP_test_data/iasp91_surface_waves_table.txt": {
+        "size": 13083
+      },
+      "obspy/taup/tests/data/TauP_test_data/underside_reflections.txt": {
+        "size": 938
+      },
+      "obspy/taup/tests/test_misc.py": {
+        "size": 2882
+      },
+      "obspy/taup/tests/test_ray_paths.py": {
+        "size": 8543
+      },
+      "obspy/taup/tests/test_seismic_phase.py": {
+        "size": 4614
+      },
+      "obspy/taup/tests/test_slowness_model.py": {
+        "size": 1469
+      },
+      "obspy/taup/tests/test_split_model.py": {
+        "size": 4631
+      },
+      "obspy/taup/tests/test_tau.py": {
+        "size": 47157
+      },
+      "obspy/taup/tests/test_taup_geo.py": {
+        "size": 10785
+      },
+      "obspy/taup/tests/test_taup_plotting.py": {
+        "size": 8283
+      },
+      "obspy/taup/tests/test_velocity_model.py": {
+        "size": 1472
+      },
+      "obspy/taup/utils.py": {
+        "size": 6393
+      },
+      "obspy/taup/velocity_layer.py": {
+        "size": 5142
+      },
+      "obspy/taup/velocity_model.py": {
+        "size": 27042
+      },
+      "pyproject.toml": {
+        "size": 202
+      },
+      "runtests.py": {
+        "size": 523
+      },
+      "setup.py": {
+        "size": 34109
+      }
+    },
+    "processed_by": "zip_fallback",
+    "success": true
+  },
+  "structure": {
+    "packages": [
+      "source.obspy",
+      "source.obspy.clients",
+      "source.obspy.core",
+      "source.obspy.geodetics",
+      "source.obspy.imaging",
+      "source.obspy.io",
+      "source.obspy.lib",
+      "source.obspy.realtime",
+      "source.obspy.scripts",
+      "source.obspy.signal",
+      "source.obspy.taup"
+    ]
+  },
+  "dependencies": {
+    "has_environment_yml": false,
+    "has_requirements_txt": false,
+    "pyproject": true,
+    "setup_cfg": false,
+    "setup_py": true
+  },
+  "entry_points": {
+    "imports": [],
+    "cli": [],
+    "modules": []
+  },
+  "llm_analysis": {
+    "core_modules": [
+      {
+        "package": "source.obspy.clients",
+        "module": "earthworm.client",
+        "functions": [
+          "get_waveforms",
+          "get_metadata"
+        ],
+        "classes": [
+          "EarthwormClient"
+        ],
+        "description": "Provides functionality to interact with Earthworm WaveServer for waveform and metadata retrieval."
+      },
+      {
+        "package": "source.obspy.clients",
+        "module": "fdsn.client",
+        "functions": [
+          "get_events",
+          "get_stations",
+          "get_waveforms"
+        ],
+        "classes": [
+          "Client"
+        ],
+        "description": "Implements a client for the FDSN web services to fetch seismic event, station, and waveform data."
+      },
+      {
+        "package": "source.obspy.core",
+        "module": "stream",
+        "functions": [
+          "read",
+          "write",
+          "filter"
+        ],
+        "classes": [
+          "Stream",
+          "Trace"
+        ],
+        "description": "Core module for handling seismic data streams and traces, including reading, writing, and processing."
+      },
+      {
+        "package": "source.obspy.signal",
+        "module": "filter",
+        "functions": [
+          "bandpass",
+          "lowpass",
+          "highpass"
+        ],
+        "classes": [],
+        "description": "Provides signal filtering functions for seismic data processing."
+      },
+      {
+        "package": "source.obspy.taup",
+        "module": "taup_time",
+        "functions": [
+          "get_travel_times"
+        ],
+        "classes": [
+          "TauPyModel"
+        ],
+        "description": "Calculates seismic travel times using the TauP toolkit."
+      }
+    ],
+    "cli_commands": [
+      {
+        "name": "runtests",
+        "module": "source.obspy.scripts.runtests",
+        "description": "Runs the test suite for ObsPy."
+      },
+      {
+        "name": "sds_html_report",
+        "module": "source.obspy.scripts.sds_html_report",
+        "description": "Generates an HTML report for SDS (Seismic Data Structure) directories."
+      },
+      {
+        "name": "flinnengdahl",
+        "module": "source.obspy.scripts.flinnengdahl",
+        "description": "Converts latitude and longitude to Flinn-Engdahl region codes."
+      }
+    ],
+    "import_strategy": {
+      "primary": "import",
+      "fallback": "blackbox",
+      "confidence": 0.85
+    },
+    "dependencies": {
+      "required": [
+        "numpy",
+        "scipy",
+        "matplotlib",
+        "lxml",
+        "requests"
+      ],
+      "optional": [
+        "cartopy",
+        "pandas",
+        "pyproj"
+      ]
+    },
+    "risk_assessment": {
+      "import_feasibility": 0.8,
+      "intrusiveness_risk": "low",
+      "complexity": "medium"
+    }
+  },
+  "deepwiki_analysis": {
+    "repo_url": "https://github.com/obspy/obspy",
+    "repo_name": "obspy",
+    "content": "obspy/obspy\nCore Architecture\nCore Data Structures\nTrace and Stream\nUTCDateTime\nEvent and Catalog\nInventory and Response\nMiniSEED Format\nNordic Format\nOther Formats\nSignal Processing\nSpectral Analysis\nCross-Correlation\nTrigger Algorithms\nClient Interfaces\nFDSN Web Services\nRouting and Mass Download\nSpecialized Tools\nVisualization\nWaveform Plotting",
+    "model": "gpt-4o",
+    "source": "selenium",
+    "success": true
+  },
+  "deepwiki_options": {
+    "enabled": true,
+    "model": "gpt-4o"
+  },
+  "risk": {
+    "import_feasibility": 0.8,
+    "intrusiveness_risk": "low",
+    "complexity": "medium"
+  }
+}

@@ -1,0 +1,2 @@
+esm/source/examples/lm-design/utils/ngram_stats/bigram_seg.p -filter -text -merge -diff
+esm/source/examples/lm-design/utils/ngram_stats/monogram_seg.p -filter -text -merge -diff

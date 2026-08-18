@@ -1,0 +1,72 @@
+{
+  "timestamp": 1757168760.5242884,
+  "node": "RunNode",
+  "test_result": {
+    "passed": false,
+    "report_path": null,
+    "stdout": "",
+    "stderr": "t create_app\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\mcp_plugin\\mcp_service.py\", line 14, in <module>\n\n    from deepsearcher.loader.web_crawler import base as web_crawler_base, crawl4ai_crawler, docling_crawler, firecrawl_crawler, jina_crawler\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\source\\deepsearcher\\loader\\web_crawler\\__init__.py\", line 3, in <module>\n\n    from deepsearcher.loader.web_crawler.firecrawl_crawler import FireCrawlCrawler\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\source\\deepsearcher\\loader\\web_crawler\\firecrawl_crawler.py\", line 4, in <module>\n\n    from firecrawl import FirecrawlApp, ScrapeOptions\n\nImportError: cannot import name 'ScrapeOptions' from 'firecrawl' (D:\\download\\Anaconda\\envs\\deep-searcher_168308_env\\lib\\site-packages\\firecrawl\\__init__.py)\n\n\nERROR conda.cli.main_run:execute(49): `conda run python mcp_output\\start_mcp.py` failed. (See above for error)\n"
+  },
+  "run_result": {
+    "success": false,
+    "test_passed": false,
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "t create_app\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\mcp_plugin\\mcp_service.py\", line 14, in <module>\n\n    from deepsearcher.loader.web_crawler import base as web_crawler_base, crawl4ai_crawler, docling_crawler, firecrawl_crawler, jina_crawler\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\source\\deepsearcher\\loader\\web_crawler\\__init__.py\", line 3, in <module>\n\n    from deepsearcher.loader.web_crawler.firecrawl_crawler import FireCrawlCrawler\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\source\\deepsearcher\\loader\\web_crawler\\firecrawl_crawler.py\", line 4, in <module>\n\n    from firecrawl import FirecrawlApp, ScrapeOptions\n\nImportError: cannot import name 'ScrapeOptions' from 'firecrawl' (D:\\download\\Anaconda\\envs\\deep-searcher_168308_env\\lib\\site-packages\\firecrawl\\__init__.py)\n\n\nERROR conda.cli.main_run:execute(49): `conda run python mcp_output\\start_mcp.py` failed. (See above for error)\n",
+    "timestamp": 1757168760.5242884,
+    "error_type": "ImportError",
+    "error": "Import error: Traceback (most recent call last):\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\start_mcp.py\", line 17, in <module>\n\n    from mcp_service import create_app\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\mcp_plugin\\mcp_service.py\", line 14, in <module>\n\n    from deepsearcher.loader.web_crawler import base as web_crawler_base, crawl4ai_crawler, docling_crawler, firecrawl_crawler, jina_crawler\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\source\\deepsearcher\\loader\\web_crawler\\__init__.py\", line 3, in <module>\n\n    from deepsearcher.loader.web_crawler.firecrawl_crawler import FireCrawlCrawler\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\source\\deepsearcher\\loader\\web_crawler\\firecrawl_crawler.py\", line 4, in <module>\n\n    from firecrawl import FirecrawlApp, ScrapeOptions\n\nImportError: cannot import name 'ScrapeOptions' from 'firecrawl' (D:\\download\\Anaconda\\envs\\deep-searcher_168308_env\\lib\\site-packages\\firecrawl\\__init__.py)\n\n\nERROR conda.cli.main_run:execute(49): `conda run python mcp_output\\start_mcp.py` failed. (See above for error)\n",
+    "details": {
+      "command": "D:\\download\\Anaconda\\Scripts\\conda.exe run -n deep-searcher_168308_env --cwd E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher python mcp_output\\start_mcp.py",
+      "working_directory": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher",
+      "environment_type": "conda"
+    }
+  },
+  "environment": {
+    "type": "conda",
+    "name": "deep-searcher_168308_env",
+    "files": {
+      "pyproject_toml": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\source\\pyproject.toml"
+    },
+    "python": "3.10",
+    "exec_prefix": []
+  },
+  "plugin_info": {
+    "files": {
+      "mcp_output/start_mcp.py": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\start_mcp.py",
+      "mcp_output/mcp_plugin/__init__.py": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\mcp_plugin\\__init__.py",
+      "mcp_output/mcp_plugin/mcp_service.py": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\mcp_plugin\\mcp_service.py",
+      "mcp_output/mcp_plugin/adapter.py": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\mcp_plugin\\adapter.py",
+      "mcp_output/mcp_plugin/main.py": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\mcp_plugin\\main.py",
+      "mcp_output/requirements.txt": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\requirements.txt",
+      "mcp_output/README_MCP.md": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\README_MCP.md",
+      "mcp_output/tests_mcp/test_mcp_basic.py": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\tests_mcp\\test_mcp_basic.py"
+    },
+    "adapter_mode": "import",
+    "endpoints": [
+      "health",
+      "version",
+      "chain_of_rag_function1",
+      "chain_of_rag_function2",
+      "chainofrag",
+      "generate_openai_embedding",
+      "openaiembedding",
+      "query_openai_llm",
+      "openaillm",
+      "load_pdf",
+      "pdfloader",
+      "connect_to_milvus",
+      "query_milvus",
+      "milvusvectordb"
+    ],
+    "mcp_dir": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\mcp_plugin",
+    "tests_dir": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\tests_mcp",
+    "main_entry": "start_mcp.py",
+    "readme_path": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\deep-searcher\\mcp_output\\README_MCP.md",
+    "requirements": [
+      "fastmcp>=0.1.0",
+      "pydantic>=2.0.0"
+    ]
+  },
+  "fastmcp_installed": false
+}

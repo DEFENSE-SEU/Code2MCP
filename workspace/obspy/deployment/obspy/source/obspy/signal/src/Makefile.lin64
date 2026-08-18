@@ -1,0 +1,25 @@
+# Makefile for coordtrans
+
+INCLUDES= \
+	-I .
+
+DEPENDS = \
+	coordtrans.o \
+	xcorr.o \
+	recstalta.o \
+	pk_mbaer.o \
+	filt_util.o \
+	arpicker.o
+
+CFLAGS = -m64 -g -O2 -fPIC
+CC = gcc
+
+signal.so: $(DEPENDS)
+	$(CC) $(CFLAGS) -shared -lm -o signal.lin64.so $(DEPENDS)
+
+install: signal.so
+	cp signal.lin64.so ../lib/signal.lin64.so
+
+clean:
+	find ./ -name "*.o" -exec rm {} \;
+	rm -f *.so

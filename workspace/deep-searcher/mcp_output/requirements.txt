@@ -1,0 +1,12 @@
+fastmcp>=0.1.0
+pydantic>=2.0.0
+openai
+milvus
+PyYAML
+requests
+sentence-transformers
+
+# Optional Dependencies
+# azure-search
+# oracle-db
+# volcengine-sdk

@@ -1,44 +1,7 @@
 import os
 import shutil
 import subprocess
-import socket
-import json
-import re
-import time
 from pathlib import Path
-
-
-BASE_DEPLOYMENT_REQUIREMENTS = ("fastmcp>=0.1.0", "pydantic>=2.0.0")
-
-
-def _merge_requirements(raw_requirements: str) -> str:
-    lines = []
-    seen = set()
-    for raw in (raw_requirements or "").splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
-        key = re.split(r"[<>=!~\[]", line, maxsplit=1)[0].strip().lower()
-        if key in seen:
-            continue
-        seen.add(key)
-        lines.append(line)
-    for requirement in BASE_DEPLOYMENT_REQUIREMENTS:
-        key = re.split(r"[<>=!~\[]", requirement, maxsplit=1)[0].strip().lower()
-        if key not in seen:
-            seen.add(key)
-            lines.append(requirement)
-    return "\n".join(lines) + "\n"
-
-
-def _collect_deployment_requirements(mcp_output: Path) -> str:
-    mcp_req = mcp_output / "requirements.txt"
-    if mcp_req.exists():
-        try:
-            return _merge_requirements(mcp_req.read_text(encoding="utf-8"))
-        except Exception:
-            pass
-    return _merge_requirements("")
 
 
 def load_env_file():
@@ -108,6 +71,15 @@ def deploy_to_huggingface(workspace_dir, hf_username=None, hf_token=None, push=N
                 )
             except Exception:
                 pass
+        
+        def _collect_requirements() -> str:
+            mcp_req = mcp_output / "requirements.txt"
+            if mcp_req.exists():
+                try:
+                    return mcp_req.read_text(encoding="utf-8")
+                except Exception:
+                    pass
+            return "fastmcp\nfastapi\nuvicorn[standard]\n"
         
         dockerfile_content = f'''FROM python:3.10
 
@@ -182,7 +154,44 @@ if __name__ == "__main__":
         with open(deploy_dir / "app.py", "w", encoding="utf-8") as f:
             f.write(app_content)
         
-        merged_requirements = _collect_deployment_requirements(mcp_output)
+        readme_content = f'''---
+title: {repo_name.title()} MCP
+emoji: 🤖
+colorFrom: blue
+colorTo: purple
+sdk: docker
+sdk_version: "4.26.0"
+app_file: app.py
+pinned: false
+---
+
+# {repo_name.title()} MCP Service
+
+Auto-generated MCP service for {repo_name}.
+
+## Usage
+
+```
+https://{hf_username}-{repo_name}-mcp.hf.space/mcp
+```
+
+## Connect with Cursor
+
+```json
+{{
+  "mcpServers": {{
+    "{repo_name}": {{
+      "url": "https://{hf_username}-{repo_name}-mcp.hf.space/mcp"
+    }}
+  }}
+}}
+```
+'''
+        
+        with open(deploy_dir / "README.md", "w", encoding="utf-8") as f:
+            f.write(readme_content)
+        
+        merged_requirements = _collect_requirements()
         with open(deploy_dir / "requirements.txt", "w", encoding="utf-8") as f:
             f.write(merged_requirements)
 
@@ -192,19 +201,6 @@ if __name__ == "__main__":
                 f.write(merged_requirements)
         except Exception:
             pass
-
-        manifest = {
-            "repo_name": repo_name,
-            "transport": "http",
-            "port": 7860,
-            "entrypoint": f"{repo_name}/mcp_output/start_mcp.py",
-            "mcp_path": "/mcp",
-            "dockerfile": "Dockerfile",
-            "requirements": "requirements.txt",
-            "push_requested": bool(push),
-        }
-        with open(deploy_dir / "deployment_manifest.json", "w", encoding="utf-8") as f:
-            json.dump(manifest, f, ensure_ascii=False, indent=2)
         
         
         if push:
@@ -241,7 +237,6 @@ if __name__ == "__main__":
             return {
                 "success": True,
                 "url": f"https://{hf_username}-{space_name}.hf.space",
-                "mcp_url": f"https://{hf_username}-{space_name}.hf.space/mcp",
                 "space_url": f"https://huggingface.co/spaces/{hf_username}/{space_name}",
                 "repo_name": repo_name,
                 "pushed": True,
@@ -251,7 +246,6 @@ if __name__ == "__main__":
         return {
             "success": True,
             "url": None,
-            "mcp_url": None,
             "space_url": None,
             "repo_name": repo_name,
             "pushed": False,
@@ -269,14 +263,11 @@ def create_and_run_local_scripts(workspace_dir: str,
                                  entry_name=None,
                                  image_name=None,
                                  entry_url=None,
-                                 autorun: bool = False) -> dict:
+                                 autorun: bool = True) -> dict:
     """Create platform scripts (run_docker.ps1/.sh) under deployment/ and optionally run them.
 
-    The generated launchers only build/run the local HTTP MCP service and print the
-    connection URL. Client-specific config is handled by scripts/connect_agent.py
-    or the generated agent_connect.html guide so users can choose Cursor, Claude,
-    VS Code, ChatGPT/OpenAI, Gemini, Cline, Windsurf, or a generic MCP client
-    explicitly.
+    - Scripts are generic (not hardcoding a specific service name). They default to the repo name and http://localhost:7860/mcp.
+    - Both scripts update ~/.cursor or %USERPROFILE%\.cursor/mcp.json appending the entry last, then build and run Docker with -p 7860:7860.
     """
     try:
         workspace_path = Path(workspace_dir)
@@ -285,111 +276,145 @@ def create_and_run_local_scripts(workspace_dir: str,
 
         repo_name = workspace_path.name
         name = entry_name or os.getenv("MCP_ENTRY_NAME") or repo_name
+        url = entry_url or os.getenv("MCP_ENTRY_URL") or "http://localhost:7860/mcp"
         image = image_name or os.getenv("MCP_IMAGE_NAME") or f"{repo_name}-mcp"
-
-        def _preferred_port(name: str, base: int = 7860, upper: int = 7999) -> int:
-            h = abs(hash(name))
-            span = max(1, upper - base + 1)
-            return base + (h % span)
-
-        def _port_available(port: int) -> bool:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            try:
-                s.bind(("127.0.0.1", port))
-                s.close()
-                return True
-            except OSError:
-                try:
-                    s.close()
-                except Exception:
-                    pass
-                return False
-
-        def _pick_port(name: str, base: int = 7860, upper: int = 7999) -> int:
-            p = _preferred_port(name, base, upper)
-            for i in range(upper - base + 1):
-                candidate = base + ((p - base + i) % (upper - base + 1))
-                if _port_available(candidate):
-                    return candidate
-            return base
-
-        host_port = _pick_port(repo_name)
-        url = entry_url or os.getenv("MCP_ENTRY_URL") or f"http://localhost:{host_port}/mcp"
 
         deploy_dir = workspace_path / "deployment"
         deploy_dir.mkdir(exist_ok=True)
 
         sh_template = '''#!/usr/bin/env bash
 set -euo pipefail
+
+# Switch to the directory where this script is located
 cd "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
 mcp_entry_name="${MCP_ENTRY_NAME:-__NAME__}"
 mcp_entry_url="${MCP_ENTRY_URL:-__URL__}"
-guide_path="$(cd .. && pwd)/mcp_output/agent_connect.html"
-echo "MCP service: ${mcp_entry_name}"
-echo "HTTP MCP URL: ${mcp_entry_url}"
-echo "Connection guide: ${guide_path}"
-echo "This script does not modify agent/client config files."
+mcp_dir="${HOME}/.cursor"
+mcp_path="${mcp_dir}/mcp.json"
+mkdir -p "${mcp_dir}"
+
+if command -v python3 >/dev/null 2>&1; then
+python3 - "${mcp_path}" "${mcp_entry_name}" "${mcp_entry_url}" <<'PY'
+import json, os, sys
+path, name, url = sys.argv[1:4]
+cfg = {"mcpServers": {}}
+if os.path.exists(path):
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    except Exception:
+        cfg = {"mcpServers": {}}
+if not isinstance(cfg, dict):
+    cfg = {"mcpServers": {}}
+servers = cfg.get("mcpServers")
+if not isinstance(servers, dict):
+    servers = {}
+ordered = {}
+for k, v in servers.items():
+    if k != name:
+        ordered[k] = v
+ordered[name] = {"url": url}
+cfg = {"mcpServers": ordered}
+with open(path, "w", encoding="utf-8") as f:
+    json.dump(cfg, f, indent=2, ensure_ascii=False)
+PY
+elif command -v python >/dev/null 2>&1; then
+python - "${mcp_path}" "${mcp_entry_name}" "${mcp_entry_url}" <<'PY'
+import json, os, sys
+path, name, url = sys.argv[1:4]
+cfg = {"mcpServers": {}}
+if os.path.exists(path):
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    except Exception:
+        cfg = {"mcpServers": {}}
+if not isinstance(cfg, dict):
+    cfg = {"mcpServers": {}}
+servers = cfg.get("mcpServers")
+if not isinstance(servers, dict):
+    servers = {}
+ordered = {}
+for k, v in servers.items():
+    if k != name:
+        ordered[k] = v
+ordered[name] = {"url": url}
+cfg = {"mcpServers": ordered}
+with open(path, "w", encoding="utf-8") as f:
+    json.dump(cfg, f, indent=2, ensure_ascii=False)
+PY
+elif command -v jq >/dev/null 2>&1; then
+  name="${mcp_entry_name}"; url="${mcp_entry_url}"
+  if [ -f "${mcp_path}" ]; then
+    tmp="$(mktemp)"
+    jq --arg name "$name" --arg url "$url" '
+      .mcpServers = (.mcpServers // {})
+      | .mcpServers as $s
+      | ($s | with_entries(select(.key != $name))) as $base
+      | .mcpServers = ($base + {($name): {"url": $url}})
+    ' "${mcp_path}" > "${tmp}" && mv "${tmp}" "${mcp_path}"
+  else
+    printf '{ "mcpServers": { "%s": { "url": "%s" } } }\n' "$name" "$url" > "${mcp_path}"
+  fi
+else
+  echo "Warning: neither python nor jq found; skipped updating ~/.cursor/mcp.json" >&2
+fi
+
 docker build -t __IMAGE__ .
-docker run --rm -p __HOST_PORT__:7860 -e MCP_TRANSPORT=http -e MCP_PORT=7860 __IMAGE__
+docker run --rm -p 7860:7860 __IMAGE__
 '''
 
         sh_content = (sh_template
                        .replace("__NAME__", name)
                        .replace("__URL__", url)
-                       .replace("__IMAGE__", image)
-                       .replace("__HOST_PORT__", str(host_port)))
+                       .replace("__IMAGE__", image))
 
         (deploy_dir / "run_docker.sh").write_text(sh_content, encoding="utf-8")
 
         ps1_template = '''cd $PSScriptRoot
+
 $ErrorActionPreference = "Stop"
+
 $entryName = if ($env:MCP_ENTRY_NAME) { $env:MCP_ENTRY_NAME } else { "__NAME__" }
 $entryUrl  = if ($env:MCP_ENTRY_URL)  { $env:MCP_ENTRY_URL  } else { "__URL__" }
 $imageName = if ($env:MCP_IMAGE_NAME) { $env:MCP_IMAGE_NAME } else { "__IMAGE__" }
-$guidePath = Join-Path (Split-Path $PSScriptRoot -Parent) "mcp_output\agent_connect.html"
-Write-Host "MCP service: $entryName"
-Write-Host "HTTP MCP URL: $entryUrl"
-Write-Host "Connection guide: $guidePath"
-Write-Host "This script does not modify agent/client config files."
+
+$mcpDir = Join-Path $env:USERPROFILE ".cursor"
+$mcpPath = Join-Path $mcpDir "mcp.json"
+if (!(Test-Path $mcpDir)) { New-Item -ItemType Directory -Path $mcpDir | Out-Null }
+
+$config = @{}
+if (Test-Path $mcpPath) {
+  try { $config = Get-Content $mcpPath -Raw | ConvertFrom-Json } catch { $config = @{} }
+}
+
+# Rebuild mcpServers as ordered and append the entry last
+$serversOrdered = [ordered]@{}
+if ($config -and ($config.PSObject.Properties.Name -contains "mcpServers") -and $config.mcpServers) {
+  $existing = $config.mcpServers
+  if ($existing -is [pscustomobject]) {
+    foreach ($p in $existing.PSObject.Properties) { if ($p.Name -ne $entryName) { $serversOrdered[$p.Name] = $p.Value } }
+  } elseif ($existing -is [System.Collections.IDictionary]) {
+    foreach ($k in $existing.Keys) { if ($k -ne $entryName) { $serversOrdered[$k] = $existing[$k] } }
+  }
+}
+$serversOrdered[$entryName] = @{ url = $entryUrl }
+$config = @{ mcpServers = $serversOrdered }
+
+$config | ConvertTo-Json -Depth 10 | Set-Content -Path $mcpPath -Encoding UTF8
+Write-Host ("Updated $entryName in " + $mcpPath + " -> " + $entryUrl)
+
 docker build -t $imageName .
-docker run --rm -p __HOST_PORT__:7860 -e MCP_TRANSPORT=http -e MCP_PORT=7860 $imageName
+docker run --rm -p 7860:7860 $imageName
 '''
 
         ps1_content = (ps1_template
                         .replace("__NAME__", name)
                         .replace("__URL__", url)
-                        .replace("__IMAGE__", image)
-                        .replace("__HOST_PORT__", str(host_port)))
+                        .replace("__IMAGE__", image))
 
         (deploy_dir / "run_docker.ps1").write_text(ps1_content, encoding="utf-8")
-
-        try:
-            port_log = {
-                "repo": repo_name,
-                "port": host_port,
-                "timestamp": int(time.time())
-            }
-            (deploy_dir / "port.json").write_text(json.dumps(port_log, ensure_ascii=False, indent=2), encoding="utf-8")
-        except Exception:
-            pass
-
-        connection_hint = {
-            "entry_name": name,
-            "entry_url": url,
-            "transport": "http",
-            "host_port": host_port,
-            "guide_path": str((workspace_path / "mcp_output" / "agent_connect.html").resolve()),
-            "does_not_modify_client_config": True,
-            "write_client_config_with": [
-                f"python scripts/connect_agent.py --repo-root {workspace_path} --client cursor --remote --remote-url {url} --probe-remote --write",
-                f"python scripts/connect_agent.py --repo-root {workspace_path} --client vscode --remote --remote-url {url} --probe-remote",
-                f"python scripts/connect_agent.py --repo-root {workspace_path} --client openai --remote-url {url} --probe-remote",
-            ],
-        }
-        (deploy_dir / "connection_hint.json").write_text(
-            json.dumps(connection_hint, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
 
         if autorun:
             dockerfile_path = deploy_dir / "Dockerfile"
@@ -414,9 +439,7 @@ docker run --rm -p __HOST_PORT__:7860 -e MCP_TRANSPORT=http -e MCP_PORT=7860 $im
             "scripts_dir": str(deploy_dir),
             "entry_name": name,
             "entry_url": url,
-            "image_name": image,
-            "connection_hint": str(deploy_dir / "connection_hint.json"),
-            "host_port": host_port,
+            "image_name": image
         }
     except Exception as e:
         return {"success": False, "error": str(e)}

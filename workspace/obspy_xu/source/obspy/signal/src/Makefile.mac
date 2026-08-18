@@ -1,0 +1,27 @@
+# Makefile for coordtrans
+
+INCLUDES= \
+	-I .
+
+DEPENDS = \
+	coordtrans.o \
+	xcorr.o \
+	recstalta.o \
+	pk_mbaer.o \
+	filt_util.o \
+	arpicker.o
+
+export MACOSX_DEPLOYMENT_TARGET = 10.4
+
+CFLAGS = -g -O3 -arch i386 -arch x86_64 -arch ppc -arch ppc64 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
+CC = gcc
+
+signal.dylib: $(DEPENDS)
+	$(CC) $(CFLAGS) -dynamiclib -lm -o signal.dylib $(DEPENDS)
+
+install: signal.so
+	cp signal.so ../lib/signal.so
+
+clean:
+	find ./ -name "*.o" -exec rm {} \;
+	rm -f *.so
