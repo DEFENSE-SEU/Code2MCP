@@ -1,6 +1,8 @@
 from __future__ import annotations
 import os
 import subprocess
+import shlex
+import shutil
 from typing import Dict, Any
 import sys
 import json
@@ -12,8 +14,55 @@ from ..utils import setup_logging, ensure_directory, write_file
 logger = setup_logging()
 
 MIN_PYTHON_VERSION = "3.10"
-FALLBACK_PYTHON_VERSIONS = ["3.10", "3.11", "3.12"]
-BASE_PACKAGES = ["fastmcp", "pytest", "pytest-asyncio", "papermill", "nbclient", "ipykernel", "imagehash"]
+FALLBACK_PYTHON_VERSIONS = ["3.12", "3.11", "3.10"]
+CORE_BASE_PACKAGES = ["fastmcp", "pytest", "pytest-asyncio"]
+MAX_IMPORT_DEPENDENCIES = 12
+IMPORT_DEPENDENCY_PRIORITY = {
+    "numpy": 0,
+    "scipy": 1,
+    "pandas": 2,
+    "empyrical": 3,
+    "scikit-learn": 4,
+    "matplotlib": 5,
+    "pytz": 6,
+    "ipython": 7,
+    "simpleitk": 8,
+    "requests": 9,
+    "pyyaml": 10,
+    "pillow": 11,
+    "beautifulsoup4": 12,
+    "networkx": 13,
+    "statsmodels": 14,
+    "tqdm": 15,
+    "natsort": 16,
+}
+HEAVY_IMPORT_DEPENDENCIES = {
+    "igraph",
+    "opencv-python",
+}
+IMPORT_PACKAGE_INSTALL_FALLBACKS = {
+    "empyrical": ["empyrical-reloaded"],
+}
+
+
+def _env_int(name: str, default: int) -> int:
+    try:
+        value = int(os.getenv(name, str(default)))
+        return value if value > 0 else default
+    except ValueError:
+        return default
+
+
+def _dependency_install_timeout() -> int:
+    return _env_int("CODE2MCP_DEP_INSTALL_TIMEOUT", 300)
+
+
+def _base_install_timeout() -> int:
+    return _env_int("CODE2MCP_BASE_INSTALL_TIMEOUT", 600)
+
+
+def _test_timeout() -> int:
+    return _env_int("CODE2MCP_TEST_TIMEOUT", 300)
 
 
 def _run(cmd: list[str], cwd: str | None = None, timeout: int = 1800) -> tuple[int, str, str]:
@@ -30,6 +79,15 @@ def _run(cmd: list[str], cwd: str | None = None, timeout: int = 1800) -> tuple[i
             check=False,
         )
         return proc.returncode, proc.stdout, proc.stderr
+    except subprocess.TimeoutExpired as e:
+        stdout = e.stdout or ""
+        stderr = e.stderr or ""
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode("utf-8", errors="replace")
+        if isinstance(stderr, bytes):
+            stderr = stderr.decode("utf-8", errors="replace")
+        stderr = (stderr + f"\nCommand timed out after {timeout} seconds").strip()
+        return 124, stdout, stderr
     except Exception as e:
         return 1, "", str(e)
 
@@ -64,6 +122,115 @@ def _parse_python_requirement(requires_python: str) -> str:
         version = requires_python
     
     return _enforce_minimum_python(version)
+
+
+def _version_tuple(version_str: str) -> tuple[int, int]:
+    match = re.search(r"(\d+)\.(\d+)", version_str or "")
+    if not match:
+        return (0, 0)
+    return (int(match.group(1)), int(match.group(2)))
+
+
+def _python_satisfies_minimum(version_str: str) -> bool:
+    return _version_tuple(version_str) >= _version_tuple(MIN_PYTHON_VERSION)
+
+
+def _python_version(python_cmd: str | list[str]) -> str:
+    cmd = [python_cmd] if isinstance(python_cmd, str) else list(python_cmd)
+    code, out, err = _run(cmd + ["--version"], timeout=30)
+    if code != 0:
+        return ""
+    return (out or err).strip()
+
+
+def _install_base_packages(install_cmd: list[str], cwd: str) -> dict[str, Any]:
+    logger.info(f"Installing core MCP packages: {', '.join(CORE_BASE_PACKAGES)}")
+    core_code, core_out, core_err = _run(
+        install_cmd + CORE_BASE_PACKAGES,
+        cwd=cwd,
+        timeout=_base_install_timeout(),
+    )
+    result = {
+        "passed": core_code == 0,
+        "exit_code": core_code,
+        "message": (core_err or core_out)[-1000:],
+        "core_packages": CORE_BASE_PACKAGES,
+    }
+    return result
+
+
+def _command_exists(cmd: list[str]) -> bool:
+    if not cmd:
+        return False
+    executable = cmd[0]
+    if os.path.isabs(executable):
+        return os.path.isfile(executable)
+    return shutil.which(executable) is not None
+
+
+def _add_python_candidate(candidates: list[list[str]], value: str | list[str] | None):
+    if not value:
+        return
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return
+        if os.path.exists(text) or os.sep in text or (os.altsep and os.altsep in text):
+            parts = [text]
+        else:
+            try:
+                parts = shlex.split(text)
+            except ValueError:
+                parts = [text]
+    else:
+        parts = [str(part) for part in value if str(part)]
+    if not parts:
+        return
+    key = tuple(part.lower() for part in parts)
+    existing = {tuple(part.lower() for part in item) for item in candidates}
+    if key not in existing and _command_exists(parts):
+        candidates.append(parts)
+
+
+def _candidate_python_commands(preferred_versions: list[str] | None = None) -> list[list[str]]:
+    versions = list(dict.fromkeys((preferred_versions or []) + FALLBACK_PYTHON_VERSIONS))
+    candidates: list[list[str]] = []
+
+    _add_python_candidate(candidates, os.getenv("CODE2MCP_PYTHON"))
+    _add_python_candidate(candidates, sys.executable)
+
+    if os.name == "nt":
+        for version in versions:
+            _add_python_candidate(candidates, ["py", f"-{version}"])
+
+        user_profile = os.getenv("USERPROFILE") or str(Path.home())
+        runtime_python = os.path.join(
+            user_profile,
+            ".cache",
+            "codex-runtimes",
+            "codex-primary-runtime",
+            "dependencies",
+            "python",
+            "python.exe",
+        )
+        _add_python_candidate(candidates, runtime_python)
+
+    for version in versions:
+        _add_python_candidate(candidates, f"python{version}")
+    _add_python_candidate(candidates, "python3")
+    _add_python_candidate(candidates, "python")
+    return candidates
+
+
+def _select_venv_python(preferred_versions: list[str] | None = None) -> tuple[list[str] | None, str]:
+    for candidate in _candidate_python_commands(preferred_versions):
+        version = _python_version(candidate)
+        if _python_satisfies_minimum(version):
+            logger.info(f"Selected Python for venv: {' '.join(candidate)} ({version})")
+            return candidate, version
+        if version:
+            logger.info(f"Skipping Python below required version {MIN_PYTHON_VERSION}: {' '.join(candidate)} ({version})")
+    return None, ""
 
 def _scan_docs_for_python_version(source_dir: str) -> dict:
     hints = {}
@@ -199,9 +366,9 @@ def _install_pip_from_env_yml(python_cmd: list[str], yml_paths: list[str], cwd: 
         for p in pkgs:
             if p.startswith('-r ') or p.startswith('--requirement '):
                 req = p.split(None, 1)[1].strip()
-                _run(python_cmd + ["-m", "pip", "install", "-r", req], cwd=cwd, timeout=1800)
+                _run(python_cmd + ["-m", "pip", "install", "-r", req], cwd=cwd, timeout=_dependency_install_timeout())
             else:
-                _run(python_cmd + ["-m", "pip", "install", p], cwd=cwd, timeout=1800)
+                _run(python_cmd + ["-m", "pip", "install", p], cwd=cwd, timeout=_dependency_install_timeout())
     except Exception:
         pass
 
@@ -426,17 +593,23 @@ def _create_conda_env(env_name: str, repo_root: str, deps: Dict[str, Any]) -> Di
     
     if created:
         env_info["python"] = selected_py
-        _run([conda_exe, "run", "-n", env_name, "pip", "install"] + BASE_PACKAGES, cwd=repo_root, timeout=1800)
+        env_info["base_installation"] = _install_base_packages(
+            [conda_exe, "run", "-n", env_name, "pip", "install"],
+            repo_root,
+        )
+        if not env_info["base_installation"]["passed"]:
+            logger.warning(f"Base MCP environment package installation failed: {env_info['base_installation']['message']}")
+            return None
         
         if not deps.get("has_environment_yml"):
             python_exe_conda = f"{conda_exe} run -n {env_name} python"
             
             if deps.get("pyproject") and pyproject_path:
-                _run([conda_exe, "run", "-n", env_name, "pip", "install", "-e", os.path.dirname(pyproject_path)], cwd=repo_root, timeout=1800)
+                _run([conda_exe, "run", "-n", env_name, "pip", "install", "-e", os.path.dirname(pyproject_path)], cwd=repo_root, timeout=_dependency_install_timeout())
             else:
                 package_name = _extract_package_name(repo_root)
                 if package_name:
-                    _run([conda_exe, "run", "-n", env_name, "pip", "install", package_name], cwd=repo_root, timeout=600)
+                    _run([conda_exe, "run", "-n", env_name, "pip", "install", package_name], cwd=repo_root, timeout=_dependency_install_timeout())
             
             if deps.get("has_requirements_txt"):
                 req_txt = os.path.join(repo_root, "requirements.txt")
@@ -448,7 +621,7 @@ def _create_conda_env(env_name: str, repo_root: str, deps: Dict[str, Any]) -> Di
                     req_txt_path = source_req_txt
                 if req_txt_path:
                     logger.info(f"Installing from requirements.txt")
-                    _run([conda_exe, "run", "-n", env_name, "pip", "install", "-r", req_txt_path], cwd=repo_root, timeout=1800)
+                    _run([conda_exe, "run", "-n", env_name, "pip", "install", "-r", req_txt_path], cwd=repo_root, timeout=_dependency_install_timeout())
             
             yml_paths = [os.path.join(repo_root, "environment.yml"), os.path.join(repo_root, "source", "environment.yml")]
             python_cmd = [conda_exe, "run", "-n", env_name, "python"]
@@ -491,24 +664,53 @@ def _create_venv_env(repo_root: str, repo_name: str, deps: Dict[str, Any]) -> Di
     preferred_versions.extend(FALLBACK_PYTHON_VERSIONS)
     preferred_versions = list(dict.fromkeys(preferred_versions))
     selected_py = preferred_versions[0] if preferred_versions else MIN_PYTHON_VERSION
+
+    base_python_cmd, base_python_version = _select_venv_python(preferred_versions)
+    if not base_python_cmd:
+        logger.warning(f"No Python interpreter >= {MIN_PYTHON_VERSION} found for venv creation")
+        return None
     
-    env_info = {"type": "venv", "name": env_name, "path": env_path, "files": {}, "python": selected_py, "exec_prefix": []}
+    env_info = {
+        "type": "venv",
+        "name": env_name,
+        "path": env_path,
+        "files": {},
+        "python": base_python_version.replace("Python", "").strip() or selected_py,
+        "base_python": " ".join(base_python_cmd),
+        "exec_prefix": [],
+    }
     
     venv_py = _venv_python_path(env_path)
     if not os.path.isfile(venv_py):
         logger.info(f"Creating isolated venv environment: {env_name}")
-        code, out, err = _run([sys.executable, "-m", "venv", env_path], cwd=repo_root)
+        code, out, err = _run(base_python_cmd + ["-m", "venv", env_path], cwd=repo_root)
         if code != 0:
             logger.warning(f"Failed to create venv: {err or out}")
             return None
 
     if os.path.isfile(venv_py):
+        actual_version = _python_version(venv_py)
+        if not _python_satisfies_minimum(actual_version):
+            logger.warning(f"Venv Python is below required version {MIN_PYTHON_VERSION}: {actual_version}")
+            return None
+        env_info["python"] = actual_version.replace("Python", "").strip() or selected_py
+
         logger.info(f"Upgrading pip: {env_name}")
-        _run([venv_py, "-m", "pip", "install", "-U", "pip"], cwd=repo_root)
-        
-        _run([venv_py, "-m", "pip", "install"] + BASE_PACKAGES, cwd=repo_root, timeout=1800)
-        
-        _install_deps_with_priority(venv_py, repo_root, deps, repo_name)
+        pip_code, pip_out, pip_err = _run([venv_py, "-m", "pip", "install", "-U", "pip"], cwd=repo_root, timeout=_base_install_timeout())
+        env_info["pip_upgrade"] = {
+            "passed": pip_code == 0,
+            "exit_code": pip_code,
+            "message": (pip_err or pip_out)[-1000:],
+        }
+        if pip_code != 0:
+            logger.warning(f"pip upgrade failed; continuing with bundled pip: {pip_err or pip_out}")
+
+        env_info["base_installation"] = _install_base_packages([venv_py, "-m", "pip", "install"], repo_root)
+        if not env_info["base_installation"]["passed"]:
+            logger.warning(f"Base MCP environment package installation failed: {env_info['base_installation']['message']}")
+            return None
+
+        env_info["dependency_installation"] = _install_deps_with_priority(venv_py, repo_root, deps, repo_name)
 
         yml_paths = [os.path.join(repo_root, "environment.yml"), os.path.join(repo_root, "source", "environment.yml")]
         _install_pip_from_env_yml([venv_py], yml_paths, repo_root)
@@ -563,10 +765,150 @@ def _extract_package_name(repo_root: str) -> str:
                                 return match.group(1)
             except:
                 pass
+    setup_py_paths = [
+        os.path.join(repo_root, "setup.py"),
+        os.path.join(repo_root, "source", "setup.py"),
+    ]
+    for setup_py_path in setup_py_paths:
+        name = _extract_setup_py_package_name(setup_py_path)
+        if name:
+            return name
     return ""
 
 
+def _extract_setup_py_package_name(setup_py_path: str) -> str:
+    if not os.path.isfile(setup_py_path):
+        return ""
+    try:
+        import ast
+        text = Path(setup_py_path).read_text(encoding="utf-8-sig", errors="ignore")
+        tree = ast.parse(text)
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            func = node.func
+            if isinstance(func, ast.Name) and func.id == "setup":
+                for keyword in node.keywords:
+                    if keyword.arg == "name" and isinstance(keyword.value, ast.Constant):
+                        value = keyword.value.value
+                        if isinstance(value, str) and re.fullmatch(r"[A-Za-z0-9_.-]+", value):
+                            return value
+    except Exception:
+        pass
+
+    try:
+        text = Path(setup_py_path).read_text(encoding="utf-8-sig", errors="ignore")
+        match = re.search(r"\bsetup\s*\([\s\S]*?\bname\s*=\s*['\"]([A-Za-z0-9_.-]+)['\"]", text)
+        if match:
+            return match.group(1)
+    except Exception:
+        pass
+    return ""
+
+
+def _clean_import_packages(packages: Any) -> list[str]:
+    cleaned: list[str] = []
+    seen: set[str] = set()
+    install_heavy = os.getenv("CODE2MCP_INSTALL_HEAVY_IMPORT_DEPS", "false").lower() == "true"
+    for raw in packages or []:
+        package = str(raw or "").strip()
+        if not package or not re.fullmatch(r"[A-Za-z0-9_.-]+", package):
+            continue
+        key = package.lower()
+        if key in HEAVY_IMPORT_DEPENDENCIES and not install_heavy:
+            continue
+        if key in seen:
+            continue
+        seen.add(key)
+        cleaned.append(package)
+    cleaned.sort(key=lambda pkg: (IMPORT_DEPENDENCY_PRIORITY.get(pkg.lower(), 100), pkg.lower()))
+    return cleaned[:MAX_IMPORT_DEPENDENCIES]
+
+
+def _install_import_packages(python_exe: str, repo_root: str, packages: list[str]) -> Dict[str, Any]:
+    installed: list[str] = []
+    installed_distributions: dict[str, str] = {}
+    failed: dict[str, str] = {}
+    last_code = 0
+    for package in packages:
+        candidates = [package] + IMPORT_PACKAGE_INSTALL_FALLBACKS.get(package.lower(), [])
+        last_error = ""
+        for candidate in candidates:
+            code, out, err = _run(
+                [python_exe, "-m", "pip", "install", candidate],
+                cwd=repo_root,
+                timeout=_dependency_install_timeout(),
+            )
+            last_code = code
+            if code == 0:
+                installed.append(package)
+                installed_distributions[package] = candidate
+                break
+            last_error = (err or out)[-500:]
+            logger.warning(f"Import dependency install failed for {candidate}: {err or out}")
+        else:
+            failed[package] = last_error
+
+    passed = bool(packages) and not failed
+    message = ""
+    if failed:
+        message = json.dumps(
+            {"installed": installed, "installed_distributions": installed_distributions, "failed": failed},
+            ensure_ascii=False,
+        )[-1000:]
+    return {
+        "passed": passed,
+        "strategy": "import_packages",
+        "exit_code": 0 if passed else last_code or 1,
+        "message": message,
+        "installed": installed,
+        "installed_distributions": installed_distributions,
+        "failed": failed,
+    }
+
+
+def _install_full_requirements_first() -> bool:
+    return os.getenv("CODE2MCP_INSTALL_FULL_REQUIREMENTS_FIRST", "false").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _requirements_paths(repo_root: str) -> list[str]:
+    return [
+        path
+        for path in (
+            os.path.join(repo_root, "requirements.txt"),
+            os.path.join(repo_root, "source", "requirements.txt"),
+        )
+        if os.path.exists(path)
+    ]
+
+
+def _install_requirements_file(python_exe: str, repo_root: str, req_path: str) -> Dict[str, Any]:
+    logger.info("Installing from requirements.txt")
+    code, out, err = _run(
+        [python_exe, "-m", "pip", "install", "-r", req_path],
+        cwd=repo_root,
+        timeout=_dependency_install_timeout(),
+    )
+    result = {
+        "passed": code == 0,
+        "strategy": "requirements",
+        "exit_code": code,
+        "message": "" if code == 0 else (err or out)[-1000:],
+        "requirements_path": req_path,
+    }
+    if code != 0:
+        logger.warning(f"requirements.txt install failed: {err or out}")
+    return result
+
+
 def _install_deps_with_priority(python_exe: str, repo_root: str, deps: Dict[str, Any], repo_name: str):
+    result = {
+        "passed": False,
+        "strategy": "none",
+        "exit_code": None,
+        "message": "",
+        "attempts": [],
+    }
     if deps.get("pyproject"):
         pyproject_paths = [
             os.path.join(repo_root, "pyproject.toml"),
@@ -574,29 +916,55 @@ def _install_deps_with_priority(python_exe: str, repo_root: str, deps: Dict[str,
         ]
         for pyproject_path in pyproject_paths:
             if os.path.exists(pyproject_path):
-                code, out, err = _run([python_exe, "-m", "pip", "install", "-e", os.path.dirname(pyproject_path)], cwd=repo_root, timeout=1800)
+                code, out, err = _run([python_exe, "-m", "pip", "install", "-e", os.path.dirname(pyproject_path)], cwd=repo_root, timeout=_dependency_install_timeout())
+                attempt = {"passed": code == 0, "strategy": "editable", "exit_code": code, "message": "" if code == 0 else (err or out)[-1000:]}
+                result["attempts"].append(attempt)
                 if code == 0:
-                    return True
+                    result.update(attempt)
+                    return result
+                result.update({"strategy": "editable", "exit_code": code, "message": (err or out)[-1000:]})
+                logger.warning(f"Editable install failed: {err or out}")
     
     package_name = _extract_package_name(repo_root)
     if package_name:
-        code, out, err = _run([python_exe, "-m", "pip", "install", package_name], cwd=repo_root, timeout=600)
-        if code == 0 and "Successfully installed" in out:
-            return True
-    
-    if deps.get("has_requirements_txt"):
-        req_paths = [
-            os.path.join(repo_root, "requirements.txt"),
-            os.path.join(repo_root, "source", "requirements.txt")
-        ]
-        for req_path in req_paths:
-            if os.path.exists(req_path):
-                logger.info(f"Installing from requirements.txt")
-                code, out, err = _run([python_exe, "-m", "pip", "install", "-r", req_path], cwd=repo_root, timeout=1800)
-                if code == 0:
-                    return True
-    
-    return False
+        code, out, err = _run([python_exe, "-m", "pip", "install", package_name], cwd=repo_root, timeout=_dependency_install_timeout())
+        attempt = {"passed": code == 0, "strategy": "package", "exit_code": code, "message": "" if code == 0 else (err or out)[-1000:], "package": package_name}
+        result["attempts"].append(attempt)
+        if attempt["passed"]:
+            result.update(attempt)
+            return result
+        result.update({"strategy": "package", "exit_code": code, "message": (err or out)[-1000:]})
+        if code != 0:
+            logger.warning(f"Package install failed: {err or out}")
+
+    import_packages = _clean_import_packages(deps.get("import_packages"))
+    requirements_first = _install_full_requirements_first()
+    requirements_attempted = False
+    if deps.get("has_requirements_txt") and requirements_first:
+        for req_path in _requirements_paths(repo_root):
+            req_result = _install_requirements_file(python_exe, repo_root, req_path)
+            result["attempts"].append(req_result)
+            result.update(req_result)
+            requirements_attempted = True
+            if req_result["passed"]:
+                return result
+
+    if import_packages:
+        import_result = _install_import_packages(python_exe, repo_root, import_packages)
+        result["attempts"].append(import_result)
+        result.update(import_result)
+        if import_result["passed"]:
+            return result
+
+    if deps.get("has_requirements_txt") and not requirements_attempted:
+        for req_path in _requirements_paths(repo_root):
+            req_result = _install_requirements_file(python_exe, repo_root, req_path)
+            result["attempts"].append(req_result)
+            result.update(req_result)
+            if req_result["passed"]:
+                return result
+
+    return result
 
 
 def _create_test_infrastructure(repo_root: str, repo_name: str):
@@ -693,10 +1061,18 @@ def _create_uv_env(repo_root: str, repo_name: str, deps: Dict[str, Any]) -> Dict
         return None
     
     env_info["exec_prefix"] = [venv_py]
+    actual_version = _python_version(venv_py)
+    if not _python_satisfies_minimum(actual_version):
+        logger.warning(f"UV Python is below required version {MIN_PYTHON_VERSION}: {actual_version}")
+        return None
+    env_info["python"] = actual_version.replace("Python", "").strip() or env_info["python"]
     
-    _run([venv_py, "-m", "pip", "install"] + BASE_PACKAGES, cwd=repo_root, timeout=1800)
-    
-    _install_deps_with_priority(venv_py, repo_root, deps, repo_name)
+    env_info["base_installation"] = _install_base_packages([venv_py, "-m", "pip", "install"], repo_root)
+    if not env_info["base_installation"]["passed"]:
+        logger.warning(f"Base MCP environment package installation failed: {env_info['base_installation']['message']}")
+        return None
+
+    env_info["dependency_installation"] = _install_deps_with_priority(venv_py, repo_root, deps, repo_name)
     
     yml_paths = [os.path.join(repo_root, "environment.yml"), os.path.join(repo_root, "source", "environment.yml")]
     _install_pip_from_env_yml([venv_py], yml_paths, repo_root)
@@ -729,8 +1105,12 @@ def env_node(state: Dict[str, Any]) -> Dict[str, Any]:
         if env:
             logger.info(f"Successfully created UV environment: {env['name']}")
     
-    if not env and _check_conda_available():
-        logger.info("Attempting conda environment creation")
+    if not env:
+        logger.info("Falling back to venv environment creation")
+        env = _create_venv_env(repo_root, repo_name, deps)
+
+    if not env and os.getenv("CODE2MCP_ENABLE_CONDA", "false").lower() == "true" and _check_conda_available():
+        logger.info("Attempting optional conda environment creation")
         _cleanup_old_envs(repo_name)
         env_name = _env_name(repo_name)
         env = _create_conda_env(env_name, repo_root, deps)
@@ -738,17 +1118,17 @@ def env_node(state: Dict[str, Any]) -> Dict[str, Any]:
             logger.info(f"Successfully created conda environment: {env_name}")
     
     if not env:
-        logger.info("Falling back to venv environment creation")
-        env = _create_venv_env(repo_root, repo_name, deps)
-    
-    if not env:
+        message = f"Unable to create a usable environment with Python >= {MIN_PYTHON_VERSION} and base MCP dependencies"
         state.setdefault("errors", []).append({
             "node": "EnvNode",
             "type": "EnvSetupFailed",
-            "message": "Unable to create any type of environment",
-            "action_taken": "continue"
+            "message": message,
+            "action_taken": "abort"
         })
-        env = {"type": "none", "name": "none", "files": {}, "python": "3.10", "exec_prefix": []}
+        state["error"] = message
+        state["status"] = "failed"
+        state["workflow_status"] = "failed"
+        return state
     
     _create_test_infrastructure(repo_root, repo_name)
 
@@ -791,7 +1171,7 @@ def env_node(state: Dict[str, Any]) -> Dict[str, Any]:
             cmd = env["exec_prefix"] + ["-m", "pytest", "-q"]
         else:
             cmd = ["python", "-m", "pytest", "-q"]
-        code, out, err = _run(cmd, cwd=repo_root, timeout=1800)
+        code, out, err = _run(cmd, cwd=repo_root, timeout=_test_timeout())
         if code == 0:
             tests["passed"] = True
             logger.info("Pytest tests passed")
