@@ -2,14 +2,34 @@ import os
 import time
 import random
 import logging
+import asyncio
+import json
+import re
+from pathlib import Path
 from typing import Optional, Dict, Any, Type
 from dataclasses import dataclass
+from urllib.parse import unquote, urlparse
+from urllib.request import url2pathname
 from pydantic import BaseModel
-from langchain.chat_models import init_chat_model
-from langchain_openai import ChatOpenAI
-from langchain_anthropic import ChatAnthropic
-from langchain_ollama import ChatOllama
-from langchain.schema import HumanMessage, SystemMessage
+
+try:
+    from langchain.chat_models import init_chat_model
+    from langchain_openai import ChatOpenAI
+    from langchain_anthropic import ChatAnthropic
+    from langchain_ollama import ChatOllama
+    from langchain.schema import HumanMessage, SystemMessage
+    HAS_LANGCHAIN = True
+except ImportError:
+    init_chat_model = None
+    ChatOpenAI = None
+    ChatAnthropic = None
+    ChatOllama = None
+    HumanMessage = None
+    SystemMessage = None
+    HAS_LANGCHAIN = False
+
+from .codex_auth import get_codex_auth, has_codex_auth_available
+from .codex_client import CodexBackendError, invoke_codex, invoke_codex_json
 
 try:
     from langchain_aws import ChatBedrock, ChatBedrockConverse
@@ -20,6 +40,99 @@ except ImportError:
     HAS_AWS = False
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+PLACEHOLDER_VALUES = {
+    "",
+    "your_openai_api_key_here",
+    "your_deepseek_api_key_here",
+    "your_qwen_api_key_here",
+    "your_claude_api_key_here",
+    "your_jina_api_key_here",
+    "your_huggingface_token_here",
+    "your_hf_username",
+    "your_aws_access_key_id",
+    "your_aws_secret_access_key",
+}
+
+
+def clean_env_value(value: Optional[str]) -> str:
+    value = (value or "").strip()
+    if value.lower() in PLACEHOLDER_VALUES:
+        return ""
+    return value
+
+
+_SENSITIVE_VALUE_PATTERNS = [
+    re.compile(r"\b((?:https?|git)://)([^/\s:@]+(?::[^/\s@]*)?)(@)"),
+    re.compile(
+        r"(?i)\b((?:OPENAI|ANTHROPIC|CLAUDE|DEEPSEEK|QWEN|HF|HUGGINGFACE|GITHUB|AWS)?_?"
+        r"(?:API[_-]?KEY|ACCESS[_-]?TOKEN|AUTH[_-]?TOKEN|REFRESH[_-]?TOKEN|SECRET[_-]?KEY|SECRET|PASSWORD|PASSWD|TOKEN))"
+        r"\b(\s*[=:]\s*)([\"']?)([^\"'\s,;]{6,})([\"']?)"
+    ),
+    re.compile(
+        r"(?i)([\"'](?:api[_-]?key|access[_-]?token|auth[_-]?token|refresh[_-]?token|secret[_-]?key|secret|password|passwd|token)[\"']"
+        r"\s*:\s*)([\"'])([^\"']{6,})([\"'])"
+    ),
+    re.compile(r"(?i)\b(Bearer\s+)([A-Za-z0-9._~+/=-]{8,})"),
+    re.compile(
+        r"(?<![A-Za-z0-9])"
+        r"(?:sk-(?:proj-)?[A-Za-z0-9_-]{12,}|sk-ant-[A-Za-z0-9_-]{12,}|"
+        r"gh[pousr]_[A-Za-z0-9_]{12,}|github_pat_[A-Za-z0-9_]{20,}|hf_[A-Za-z0-9]{12,})"
+        r"(?![A-Za-z0-9])"
+    ),
+]
+_SENSITIVE_KEY_PATTERN = re.compile(
+    r"(?i)(api[_-]?key|access[_-]?token|auth[_-]?token|refresh[_-]?token|secret[_-]?key|"
+    r"credential|credentials|password|passwd|secret|token)"
+)
+
+
+def redact_sensitive_text(value: Any, replacement: str = "[REDACTED]") -> str:
+    """Mask common credential values before storing logs or sending repair prompts."""
+    text = "" if value is None else str(value)
+    if not text:
+        return text
+    redacted = text
+    redacted = _SENSITIVE_VALUE_PATTERNS[0].sub(lambda m: f"{m.group(1)}{replacement}{m.group(3)}", redacted)
+    redacted = _SENSITIVE_VALUE_PATTERNS[1].sub(lambda m: f"{m.group(1)}{m.group(2)}{m.group(3)}{replacement}{m.group(5)}", redacted)
+    redacted = _SENSITIVE_VALUE_PATTERNS[2].sub(lambda m: f"{m.group(1)}{m.group(2)}{replacement}{m.group(4)}", redacted)
+    redacted = _SENSITIVE_VALUE_PATTERNS[3].sub(lambda m: f"{m.group(1)}{replacement}", redacted)
+    redacted = _SENSITIVE_VALUE_PATTERNS[4].sub(replacement, redacted)
+    return redacted
+
+
+def redact_sensitive_data(value: Any, replacement: str = "[REDACTED]") -> Any:
+    """Recursively redact strings inside JSON-like runtime reports."""
+    if isinstance(value, str):
+        return redact_sensitive_text(value, replacement)
+    if isinstance(value, dict):
+        redacted = {}
+        for key, item in value.items():
+            if _SENSITIVE_KEY_PATTERN.search(str(key)):
+                redacted[key] = replacement
+            else:
+                redacted[key] = redact_sensitive_data(item, replacement)
+        return redacted
+    if isinstance(value, list):
+        return [redact_sensitive_data(item, replacement) for item in value]
+    if isinstance(value, tuple):
+        return tuple(redact_sensitive_data(item, replacement) for item in value)
+    return value
+
+
+def is_non_retryable_llm_error(exc: Exception) -> bool:
+    if isinstance(exc, CodexBackendError):
+        return not exc.retryable
+    message = str(exc)
+    non_retryable_markers = [
+        "Codex backend HTTP 400",
+        "Codex backend HTTP 401",
+        "Codex backend HTTP 403",
+        "not supported when using Codex",
+        "API_KEY not set",
+        "auth cache",
+    ]
+    return any(marker in message for marker in non_retryable_markers)
 
 import platform
 
@@ -86,6 +199,8 @@ class LLMService:
     
     def _create_client(self):
         try:
+            if self.model_provider != "openai-codex" and not HAS_LANGCHAIN and self.model_provider != "bedrock":
+                raise ImportError("LangChain provider packages are required for this model provider")
             if self.model_provider == "bedrock" and HAS_AWS:
                 bedrock_runtime = boto3.client('bedrock-runtime')
                 return ChatBedrockConverse(client=bedrock_runtime, model_id=self.model_version, temperature=self.temperature, max_tokens=self.config.max_tokens)
@@ -97,6 +212,8 @@ class LLMService:
                 return ChatOpenAI(model=self.model_version, openai_api_key=self.config.api_key, openai_api_base=self.config.base_url, temperature=self.temperature, max_tokens=self.config.max_tokens, request_timeout=self.config.timeout, max_retries=self.config.max_retries, streaming=False)
             elif self.model_provider == "qwen":
                 return ChatOpenAI(model=self.model_version, openai_api_key=self.config.api_key, openai_api_base=self.config.base_url, temperature=self.temperature, max_tokens=self.config.max_tokens, request_timeout=self.config.timeout, max_retries=self.config.max_retries, streaming=False)
+            elif self.model_provider == "openai-codex":
+                return None
             elif self.model_provider == "ollama":
                 return ChatOllama(model=self.model_version, temperature=self.temperature, num_predict=-1, num_ctx=131072, base_url="http://localhost:11434")
             else:
@@ -104,6 +221,41 @@ class LLMService:
         except Exception as e:
             logger.error(f"Failed to create LLM client: {e}")
             raise
+
+    def _invoke_codex(
+        self,
+        user_prompt: str,
+        system_prompt: Optional[str] = None,
+        pydantic_obj: Optional[Type[BaseModel]] = None,
+    ) -> Any:
+        auth = get_codex_auth(interactive=True)
+        if pydantic_obj:
+            schema = ""
+            try:
+                if hasattr(pydantic_obj, "model_json_schema"):
+                    schema = json.dumps(pydantic_obj.model_json_schema(), ensure_ascii=False)
+            except Exception:
+                schema = ""
+            json_prompt = user_prompt + "\n\nReturn JSON only."
+            if schema:
+                json_prompt += f"\nJSON schema:\n{schema}"
+            payload = invoke_codex_json(
+                json_prompt,
+                system_prompt,
+                auth=auth,
+                model=self.model_version,
+                base_url=self.config.base_url or "https://chatgpt.com/backend-api/codex",
+            )
+            if hasattr(pydantic_obj, "model_validate"):
+                return pydantic_obj.model_validate(payload)
+            return pydantic_obj.parse_obj(payload)
+        return invoke_codex(
+            user_prompt,
+            system_prompt,
+            auth=auth,
+            model=self.model_version,
+            base_url=self.config.base_url or "https://chatgpt.com/backend-api/codex",
+        )
     
     def invoke(self, 
               user_prompt: str, 
@@ -123,6 +275,29 @@ class LLMService:
             LLM response
         """
         self.total_calls += 1
+
+        if self.model_provider == "openai-codex":
+            retry_count = 0
+            while True:
+                try:
+                    response = self._invoke_codex(user_prompt, system_prompt, pydantic_obj)
+                    self.total_prompt_tokens += 0
+                    self.total_completion_tokens += 0
+                    self.total_tokens += 0
+                    return response
+                except Exception as e:
+                    retry_count += 1
+                    self.retry_count += 1
+                    if is_non_retryable_llm_error(e):
+                        self.failed_calls += 1
+                        logger.error(f"Non-retryable LLM configuration error: {e}")
+                        raise e
+                    if retry_count > max_retries:
+                        self.failed_calls += 1
+                        raise e
+                    sleep_time = retry_count * 2
+                    logger.warning(f"LLM call failed, retrying in {sleep_time} seconds (attempt {retry_count}/{max_retries}): {str(e)}")
+                    time.sleep(sleep_time)
         
         messages = []
         if system_prompt:
@@ -137,6 +312,14 @@ class LLMService:
         retry_count = 0
         while True:
             try:
+                if self.model_provider == "openai-codex":
+                    response = self._invoke_codex(user_prompt, system_prompt, pydantic_obj)
+                    response_content = str(response)
+                    self.total_prompt_tokens += prompt_tokens
+                    self.total_completion_tokens += 0
+                    self.total_tokens += prompt_tokens
+                    return response
+
                 if pydantic_obj:
                     structured_llm = self._client.with_structured_output(pydantic_obj)
                     response = structured_llm.invoke(messages)
@@ -232,25 +415,36 @@ def get_model_config(provider: str = None) -> ModelConfig:
     
     if not provider:
         provider = os.getenv("MODEL_PROVIDER", "openai")
-    
+    provider = (provider or "openai").strip().lower()
+
     if provider == "openai":
-        api_key = os.getenv("OPENAI_API_KEY")
-        base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
-        model_version = os.getenv("OPENAI_MODEL", "gpt-5")
+        api_key = clean_env_value(os.getenv("OPENAI_API_KEY"))
+        if api_key:
+            base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+            model_version = os.getenv("OPENAI_MODEL", "gpt-5")
+        else:
+            provider = "openai-codex"
+            api_key = ""
+            base_url = os.getenv("OPENAI_CODEX_BASE_URL", "https://chatgpt.com/backend-api/codex")
+            model_version = os.getenv("OPENAI_CODEX_MODEL", "gpt-5.5")
+    elif provider == "openai-codex":
+        api_key = ""
+        base_url = os.getenv("OPENAI_CODEX_BASE_URL", "https://chatgpt.com/backend-api/codex")
+        model_version = os.getenv("OPENAI_CODEX_MODEL", "gpt-5.5")
     elif provider == "deepseek":
-        api_key = os.getenv("DEEPSEEK_API_KEY")
+        api_key = clean_env_value(os.getenv("DEEPSEEK_API_KEY"))
         base_url = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
         model_version = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
     elif provider == "qwen":
-        api_key = os.getenv("QWEN_API_KEY")
+        api_key = clean_env_value(os.getenv("QWEN_API_KEY"))
         base_url = os.getenv("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
         model_version = os.getenv("QWEN_MODEL", "qwen-3")
     elif provider == "claude":
-        api_key = os.getenv("CLAUDE_API_KEY")
+        api_key = clean_env_value(os.getenv("CLAUDE_API_KEY"))
         base_url = os.getenv("CLAUDE_BASE_URL", "https://api.anthropic.com")
         model_version = os.getenv("CLAUDE_MODEL", "claude-4-sonnet")
     elif provider == "bedrock":
-        api_key = os.getenv("AWS_ACCESS_KEY_ID")
+        api_key = clean_env_value(os.getenv("AWS_ACCESS_KEY_ID"))
         base_url = None
         model_version = os.getenv("BEDROCK_MODEL", "anthropic.claude-4-sonnet")
     elif provider == "ollama":
@@ -259,8 +453,15 @@ def get_model_config(provider: str = None) -> ModelConfig:
         model_version = os.getenv("OLLAMA_MODEL", "llama2")
     else:
         raise ValueError(f"Unsupported model provider: {provider}")
-    
-    if provider not in ["ollama"] and not api_key:
+
+    if provider == "openai-codex":
+        if not has_codex_auth_available():
+            raise ValueError(
+                "OPENAI_API_KEY is empty and no OpenAI Codex auth cache was found. "
+                "Set OPENAI_API_KEY in .env, or use Codex auth by setting MODEL_PROVIDER=openai-codex "
+                "after logging in with Codex/OpenAI locally."
+            )
+    elif provider not in ["ollama"] and not api_key:
         raise ValueError(f"Environment variable {provider.upper()}_API_KEY not set")
     
     return ModelConfig(
@@ -310,6 +511,39 @@ def safe_module_name(name: str) -> str:
     if not safe_name:
         safe_name = 'mcp_service'
     return safe_name.lower()
+
+def local_path_from_repo_url(repo_url: Optional[str]) -> Optional[str]:
+    if not repo_url:
+        return None
+
+    value = repo_url.strip()
+    expanded = os.path.expanduser(value)
+    if re.match(r"^[A-Za-z]:[\\/]", expanded) or expanded.startswith("\\\\"):
+        return os.path.abspath(expanded) if os.path.exists(expanded) else None
+    if os.path.exists(expanded):
+        return os.path.abspath(expanded)
+
+    parsed = urlparse(value)
+    if parsed.scheme != "file":
+        return None
+
+    path = url2pathname(unquote(parsed.path or ""))
+    if os.name == "nt" and re.match(r"^/[A-Za-z]:", path):
+        path = path[1:]
+    if parsed.netloc and parsed.netloc not in {"localhost", "127.0.0.1"}:
+        path = f"//{parsed.netloc}{path}"
+    return os.path.abspath(path) if path and os.path.exists(path) else None
+
+def derive_repo_name(repo_url: Optional[str]) -> str:
+    local_path = local_path_from_repo_url(repo_url)
+    if local_path:
+        candidate = Path(local_path).name
+    else:
+        parsed = urlparse(repo_url or "")
+        candidate = Path(parsed.path or str(repo_url or "")).name
+    candidate = candidate.replace(".git", "").strip() or "repository"
+    safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", candidate).strip("._-")
+    return (safe or "repository")[:100]
 
 def create_directory(path: str) -> None:
     os.makedirs(path, exist_ok=True)
@@ -423,21 +657,23 @@ def retry_async(func, *args, retry_config=None, **kwargs):
 def is_llm_available() -> bool:
     try:
         config = get_model_config()
-        return bool(config.api_key or config.provider == "ollama")
+        return bool(config.api_key or config.provider in {"ollama", "openai-codex"})
     except:
         return False
 
 def list_available_providers() -> list:
     providers = []
-    if os.getenv("OPENAI_API_KEY"):
+    if clean_env_value(os.getenv("OPENAI_API_KEY")):
         providers.append("openai")
-    if os.getenv("DEEPSEEK_API_KEY"):
+    if has_codex_auth_available():
+        providers.append("openai-codex")
+    if clean_env_value(os.getenv("DEEPSEEK_API_KEY")):
         providers.append("deepseek")
-    if os.getenv("QWEN_API_KEY"):
+    if clean_env_value(os.getenv("QWEN_API_KEY")):
         providers.append("qwen")
-    if os.getenv("CLAUDE_API_KEY"):
+    if clean_env_value(os.getenv("CLAUDE_API_KEY")):
         providers.append("claude")
-    if os.getenv("AWS_ACCESS_KEY_ID"):
+    if clean_env_value(os.getenv("AWS_ACCESS_KEY_ID")):
         providers.append("bedrock")
     providers.append("ollama")
     return providers
@@ -447,6 +683,28 @@ def get_llm_stats() -> dict:
         "available_providers": list_available_providers(),
         "llm_available": is_llm_available()
     }
+
+
+def sanitize_deepwiki_content(content: str) -> str:
+    """Remove transient DeepWiki/Jina chrome while preserving useful markdown."""
+    if not content:
+        return ""
+
+    noisy_exact_lines = {
+        "Loading...",
+        "Index your code with Devin",
+        "Index your code with",
+        "Devin",
+        "Edit Wiki Share",
+    }
+    cleaned_lines: list[str] = []
+    for line in str(content).splitlines():
+        stripped = line.strip()
+        if stripped in noisy_exact_lines:
+            continue
+        cleaned_lines.append(line.rstrip())
+    return "\n".join(cleaned_lines).strip()
+
 
 def fetch_deepwiki(url: str, timeout: int = 120) -> dict:
     import requests
@@ -472,11 +730,12 @@ def fetch_deepwiki(url: str, timeout: int = 120) -> dict:
             base = f"https://r.jina.ai/{cache_bust_url}"
             
             r = requests.get(base, headers=headers, timeout=timeout, verify=False)
-            if r.status_code == 200 and r.text:
-                content = r.text
-                if "Loading..." not in content and len(content) > 50:
+            raw_content = r.text or ""
+            if r.status_code == 200 and raw_content:
+                content = sanitize_deepwiki_content(raw_content)
+                if len(content) > 50:
                     return {"success": True, "content": content, "status": r.status_code}
-                elif "Loading..." in content and attempt < 4:
+                if "Loading..." in raw_content and attempt < 4:
                     time.sleep(10)
                     continue
             
@@ -499,20 +758,22 @@ def has_critical_errors(state: Dict[str, Any]) -> bool:
     errors = state.get("errors", [])
     run_result = state.get("run_result", {})
     error_analysis = state.get("error_analysis", {})
-    
-    if not run_result.get("success", False):
+
+    if error_analysis:
+        next_action = error_analysis.get("next_action")
+        status = error_analysis.get("status", "PASS")
+        feasibility = error_analysis.get("fix_strategy", {}).get("feasibility", "FIXABLE")
+
+        if next_action == "fail" or feasibility == "REDESIGN":
+            logger.warning("Error analysis suggests the failure is not regenerable")
+            return False
+        if next_action == "regenerate":
+            return True
+        if status == "FAIL" and feasibility == "FIXABLE":
+            return True
+
+    if run_result and not run_result.get("success", False):
         return True
-    
-        if error_analysis:
-            status = error_analysis.get("status", "PASS")
-            feasibility = error_analysis.get("fix_strategy", {}).get("feasibility", "FIXABLE")
-            
-            if status == "FAIL" and feasibility == "FIXABLE":
-                return True
-            
-            if feasibility == "REDESIGN":
-                logger.warning("Error analysis suggests redesign, stopping retry attempts")
-                return False
     
     for error in errors:
         if error.get("severity") in ["high", "critical"]:
