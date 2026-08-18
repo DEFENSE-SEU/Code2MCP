@@ -1,0 +1,79 @@
+{
+  "timestamp": 1755849059.289963,
+  "node": "RunNode",
+  "test_result": {
+    "passed": false,
+    "report_path": null,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\start_mcp.py\", line 17, in <module>\n\n    from mcp_service import create_app\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\mcp_plugin\\mcp_service.py\", line 8, in <module>\n\n    from src.config import load_config, save_config\n\nImportError: cannot import name 'load_config' from 'src.config' (E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\source\\src\\config.py)\n\n\nERROR conda.cli.main_run:execute(49): `conda run python mcp_output\\start_mcp.py` failed. (See above for error)\n"
+  },
+  "run_result": {
+    "success": false,
+    "test_passed": false,
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\start_mcp.py\", line 17, in <module>\n\n    from mcp_service import create_app\n\n  File \"E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\mcp_plugin\\mcp_service.py\", line 8, in <module>\n\n    from src.config import load_config, save_config\n\nImportError: cannot import name 'load_config' from 'src.config' (E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\source\\src\\config.py)\n\n\nERROR conda.cli.main_run:execute(49): `conda run python mcp_output\\start_mcp.py` failed. (See above for error)\n",
+    "timestamp": 1755849059.289963,
+    "details": {
+      "command": "D:\\download\\Anaconda\\Scripts\\conda.exe run -n Foam-Agent_847955_env --cwd E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent python mcp_output\\start_mcp.py",
+      "working_directory": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent",
+      "environment_type": "conda"
+    }
+  },
+  "environment": {
+    "type": "conda",
+    "name": "Foam-Agent_847955_env",
+    "files": {},
+    "python": "3.10",
+    "exec_prefix": []
+  },
+  "plugin_info": {
+    "files": {
+      "mcp_output/start_mcp.py": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\start_mcp.py",
+      "mcp_output/mcp_plugin/__init__.py": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\mcp_plugin\\__init__.py",
+      "mcp_output/mcp_plugin/mcp_service.py": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\mcp_plugin\\mcp_service.py",
+      "mcp_output/mcp_plugin/adapter.py": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\mcp_plugin\\adapter.py",
+      "mcp_output/mcp_plugin/main.py": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\mcp_plugin\\main.py",
+      "mcp_output/requirements.txt": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\requirements.txt",
+      "mcp_output/README_MCP.md": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\README_MCP.md",
+      "mcp_output/tests_mcp/test_mcp_basic.py": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\tests_mcp\\test_mcp_basic.py"
+    },
+    "adapter_mode": "import",
+    "endpoints": [
+      "health",
+      "version",
+      "architectnode*",
+      "meshingnode*",
+      "inputwriternode*",
+      "localrunnernode*",
+      "reviewernode*",
+      "visualizationnode*",
+      "load_config",
+      "save_config",
+      "route_task",
+      "track_aws_event",
+      "parse_data",
+      "validate_input",
+      "load_foam_data",
+      "save_foam_data",
+      "generate_foam_output",
+      "huggingface_integration",
+      "openai_integration",
+      "parse_foam_output",
+      "run_faiss_index",
+      "get_faiss_help",
+      "get_tutorial_details",
+      "get_tutorial_structure",
+      "parse_tutorial"
+    ],
+    "mcp_dir": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\mcp_plugin",
+    "tests_dir": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\tests_mcp",
+    "main_entry": "start_mcp.py",
+    "readme_path": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\Foam-Agent\\mcp_output\\README_MCP.md",
+    "requirements": [
+      "fastmcp>=0.1.0",
+      "pydantic>=2.0.0"
+    ]
+  },
+  "fastmcp_installed": false
+}

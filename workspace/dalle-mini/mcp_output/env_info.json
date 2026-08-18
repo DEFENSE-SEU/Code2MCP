@@ -1,0 +1,17 @@
+{
+  "environment": {
+    "type": "conda",
+    "name": "dalle-mini_167415_env",
+    "files": {
+      "pyproject_toml": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\dalle-mini\\source\\pyproject.toml"
+    },
+    "python": "3.10",
+    "exec_prefix": []
+  },
+  "original_tests": {
+    "passed": false,
+    "report_path": null
+  },
+  "timestamp": 1757167653.9615595,
+  "conda_available": true
+}

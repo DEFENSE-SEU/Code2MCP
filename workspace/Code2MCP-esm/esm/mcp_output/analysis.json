@@ -1,0 +1,163 @@
+{
+  "summary": {
+    "repository_url": "https://github.com/facebookresearch/esm",
+    "summary": "Repository: facebookresearch/esm\nCommit: main\nFiles analyzed: 100+\n\nEstimated tokens: 500k+",
+    "file_tree": "...",
+    "content": {},
+    "processed_by": "gitingest",
+    "success": true
+  },
+  "structure": {
+    "packages": [
+      "source.esm",
+      "source.scripts",
+      "source.examples"
+    ]
+  },
+  "dependencies": {
+    "has_environment_yml": true,
+    "has_requirements_txt": true,
+    "pyproject": false,
+    "setup_cfg": false,
+    "setup_py": true
+  },
+  "entry_points": {
+    "imports": [],
+    "cli": [],
+    "modules": []
+  },
+  "llm_analysis": {
+    "core_modules": [
+      {
+        "package": "source.esm",
+        "module": "__init__",
+        "functions": [],
+        "classes": [],
+        "description": "Entry point for the ESM core module, may expose some core APIs."
+      },
+      {
+        "package": "source.esm",
+        "module": "pretrained",
+        "functions": [
+          "load_model_and_alphabet",
+          "load_model_and_alphabet_local"
+        ],
+        "classes": [],
+        "description": "Provides functionality to load pretrained models, either from local or remote sources."
+      },
+      {
+        "package": "source.esm",
+        "module": "data",
+        "functions": [],
+        "classes": [
+          "Alphabet",
+          "BatchConverter"
+        ],
+        "description": "Module for handling protein sequence data, including alphabet definition and batch conversion."
+      },
+      {
+        "package": "source.esm",
+        "module": "inverse_folding",
+        "functions": [
+          "load_inverse_folding_model"
+        ],
+        "classes": [],
+        "description": "Core module for inverse folding tasks, containing the Geometric Vector Perceptron (GVP) architecture."
+      },
+      {
+        "package": "source.esm",
+        "module": "model",
+        "functions": [],
+        "classes": [
+          "ESM1",
+          "ESM2",
+          "MSATransformer"
+        ],
+        "description": "Core model definition module, including ESM-1, ESM-2, and MSA Transformer."
+      },
+      {
+        "package": "source.examples",
+        "module": "lm_design",
+        "functions": [
+          "generate_fixed_backbone",
+          "generate_free_backbone"
+        ],
+        "classes": [],
+        "description": "Protein language model design module, supporting fixed backbone and free generation."
+      },
+      {
+        "package": "source.examples",
+        "module": "variant_prediction",
+        "functions": [
+          "predict_variant_effect"
+        ],
+        "classes": [],
+        "description": "Variant effect prediction module, assessing the functional impact of mutations in protein sequences."
+      },
+      {
+        "package": "source.scripts",
+        "module": "extract",
+        "functions": [
+          "extract_features"
+        ],
+        "classes": [],
+        "description": "Utility module for extracting features from models."
+      },
+      {
+        "package": "source.scripts",
+        "module": "fold",
+        "functions": [
+          "predict_structure"
+        ],
+        "classes": [],
+        "description": "Utility module for predicting protein structures."
+      }
+    ],
+    "cli_commands": [
+      {
+        "command": "esm-extract",
+        "description": "Extract features for protein sequences from a pretrained model."
+      },
+      {
+        "command": "esm-fold",
+        "description": "Predict protein structures using the ESM model."
+      }
+    ],
+    "import_strategy": {
+      "primary": "import",
+      "fallback": "cli",
+      "confidence": 0.9
+    },
+    "dependencies": {
+      "required": [
+        "torch",
+        "fair-esm",
+        "requests",
+        "biopython"
+      ],
+      "optional": []
+    },
+    "risk_assessment": {
+      "import_feasibility": 0.9,
+      "intrusiveness_risk": "low",
+      "complexity": "high"
+    }
+  },
+  "deepwiki_analysis": {
+    "repo_url": "https://github.com/facebookresearch/esm",
+    "repo_name": "esm",
+    "analysis": "### Analysis Report: GitHub Repository `facebookresearch/esm`\n\n#### 1. What are the main functions and purposes of this repository?\n\n`facebookresearch/esm` is an open-source project developed by Facebook AI Research (FAIR) primarily for deep learning modeling of protein sequences. Its core objective is to analyze and predict protein structure, function, and variant effects using Language Models (LMs) and deep learning techniques. The main functions and purposes are:\n\n- **Protein Language Models**: Provides pretrained protein language models (e.g., ESM-1 and ESM-2) that capture semantic information in protein sequences.\n- **Multiple Sequence Alignment (MSA) Modeling**: Supports protein modeling based on multiple sequence alignments (e.g., MSA Transformer).\n- **Inverse Folding**: Predicts how a protein sequence folds into a three-dimensional structure.\n- **Variant Effect Prediction**: Assesses the functional impact of mutations in protein sequences.\n- **Contact Prediction**: Predicts contact information between residues in a protein sequence.\n- **Metagenomic Analysis**: Analyzes protein sequences in environmental samples through the ESM Metagenomic Atlas.\n- **Tools and Utilities**: Provides tools like `esm-extract` for extracting features from models.\n\n#### 2. What are the core modules and entry points of this repository?\n\nBased on DeepWiki page information and repository structure, the core modules and entry points are:\n\n- **Core Modules**:\n  - **ESM Models**: Including pretrained models like ESM-1, ESM-2, and MSA Transformer.\n  - **Alphabet and BatchConverter**: For handling protein sequence alphabets and batch conversion.\n  - **esm-extract**: A utility module for extracting features from models.\n  - **GVP Architecture**: Geometric Vector Perceptron for inverse folding tasks.\n  - **ESM Metagenomic Atlas**: A submodule for metagenomic analysis.\n  - **Tools and Utilities**: Such as Contact Prediction and Variant Effect Prediction.\n\n- **Main Entry Points**:\n  - **Pretrained Models**: `esm.pretrained.load_model_and_alphabet()`\n  - **Scripts**: `scripts/extract.py`, `scripts/fold.py`\n  - **Examples**: `examples/variant_prediction/predict.py`\n\n#### 3. What are the main technology stacks and dependencies used by this repository?\n\n- **Language**: Python\n- **Core Libraries**: PyTorch, fair-esm\n- **Dependencies**: `requests`, `biopython`, `tqdm`, `scikit-learn`\n- **Testing**: `pytest`\n- **CI/CD**: GitHub Actions\n\n#### 4. Is this project suitable for conversion to an MCP (Model Context Protocol) service? Why?\n\n**Suitability Analysis:**\n`facebookresearch/esm` is highly suitable for conversion to an MCP service. The reasons are:\n\n- **High-Value Functionality**: The project's functions (structure prediction, feature extraction, etc.) are of high value and widely applicable.\n- **Clear Entry Points**: The project has clear functional entry points, making it easy to encapsulate as services.\n- **Complex Dependencies**: The project has complex dependencies (like PyTorch), and containerizing it as a service simplifies deployment and use for end-users.\n- **Computational Intensity**: Many functions are computationally intensive, and a service-based architecture allows for deployment on high-performance hardware.\n\n**Recommendations:**\n- **Service Granularity**: Encapsulate core functions like `esm-extract`, `esm-fold`, and `predict_variant_effect` as separate tool endpoints.\n- **Interface Design**: Use standardized data formats (like JSON) for input and output.\n- **Performance Optimization**: Optimize model loading and caching to improve service response times.\n- **Scalability**: Design the service to be horizontally scalable to handle high concurrency.",
+    "model": "gpt-4o",
+    "source": "llm_direct_analysis",
+    "success": true
+  },
+  "deepwiki_options": {
+    "enabled": true,
+    "model": "gpt-4o"
+  },
+  "risk": {
+    "import_feasibility": 0.9,
+    "intrusiveness_risk": "low",
+    "complexity": "high"
+  }
+}

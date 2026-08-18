@@ -1,0 +1,112 @@
+# Code2MCP Environment Variables Configuration Example
+
+# ==================== HuggingFace Configuration ====================
+# HuggingFace token for deploying MCP services to HuggingFace Spaces
+# Get your token at: https://huggingface.co/settings/tokens
+HF_TOKEN=your_huggingface_token_here
+HF_USERNAME=your_hf_username
+
+# Auto-deploy to HuggingFace after workflow completion (true/false)
+AUTO_DEPLOY_HF=true
+
+# ==================== Auto-Connect Configuration ====================
+# Auto-connect to client after successful deployment
+# Options: cursor | claude 
+# Default: cursor
+AUTO_CONNECT_CLIENT=cursor
+
+# ==================== Jina Configuration ====================
+# (Optional) Jina Reader API key for more precise repository analysis
+# Get your API key at: https://jina.ai/
+JINA_API_KEY=your_jina_api_key_here
+
+# ==================== LLM Configuration ====================
+# Model provider selection (openai/deepseek/qwen/claude/bedrock/ollama)
+MODEL_PROVIDER=openai
+
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-5
+
+# DeepSeek Configuration  
+DEEPSEEK_API_KEY=your_deepseek_api_key_here
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-v3
+
+# Qwen Configuration
+QWEN_API_KEY=your_qwen_api_key_here
+QWEN_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+QWEN_MODEL=qwen-3
+
+# Claude Configuration
+CLAUDE_API_KEY=your_claude_api_key_here
+CLAUDE_BASE_URL=https://api.anthropic.com
+CLAUDE_MODEL=claude-4-sonnet
+
+# AWS Bedrock Configuration
+AWS_ACCESS_KEY_ID=your_aws_access_key_id
+AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
+AWS_REGION=us-east-1
+BEDROCK_MODEL=anthropic.claude-4-sonnet
+
+# Ollama Local Model Configuration
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama2
+
+# General Model Parameters
+MODEL_TEMPERATURE=0.1
+MODEL_MAX_TOKENS=8192
+MODEL_TIMEOUT=30
+MODEL_MAX_RETRIES=10
+
+# ==================== Agent Configuration ====================
+# Whether to enable LLM functionality
+AGENT_USE_LLM=true
+
+# Agent iteration configuration
+AGENT_MAX_ITERATIONS=5
+AGENT_AUTO_FIX=true
+AGENT_TEST_TIMEOUT=60
+
+# ==================== Workflow Configuration ====================
+# Output directory
+WORKFLOW_OUTPUT_DIR=./output
+
+# Retry configuration
+WORKFLOW_MAX_RETRIES=3
+
+# Logging configuration
+WORKFLOW_ENABLE_LOGGING=true
+WORKFLOW_LOG_LEVEL=INFO
+
+# ==================== DeepWiki MCP Configuration ====================
+# DeepWiki MCP service configuration
+DEEPWIKI_MCP_URL=https://mcp.deepwiki.com/sse
+DEEPWIKI_MCP_TIMEOUT=30
+DEEPWIKI_MCP_ENABLE_MOCK=true
+
+# ==================== Ollama Configuration ====================
+# Ollama service configuration
+OLLAMA_HOST=localhost
+OLLAMA_PORT=11434
+
+# ==================== Analysis Configuration ====================
+# Token limit for code analysis
+ANALYSIS_MAX_TOKENS=8000
+# Maximum tokens per file
+ANALYSIS_MAX_FILE_TOKENS=2000
+# Minimum characters to retain
+ANALYSIS_MIN_CHARS=500
+
+# ==================== Usage Instructions ====================
+# 1. Copy this file to .env: cp env_example.txt .env
+# 2. Set HF_TOKEN and HF_USERNAME for HuggingFace Spaces deployment (already configured)
+# 3. Set JINA_API_KEY (optional) for enhanced DeepWiki/web analysis
+# 4. Select model provider (MODEL_PROVIDER)
+# 5. Set API keys for models (e.g., OPENAI_API_KEY/DEEPSEEK_API_KEY/...)
+# 6. Adjust other parameters as needed
+#
+# Deploy to HuggingFace:
+#   python deploy_to_hf.py workspace\your-project
+

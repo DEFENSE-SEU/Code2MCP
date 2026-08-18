@@ -1,0 +1,32 @@
+{
+  "environment": {
+    "type": "conda",
+    "name": "alphagenome_510719_env",
+    "files": {
+      "pyproject_toml": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\alphagenome\\source\\pyproject.toml"
+    },
+    "python": "3.10",
+    "exec_prefix": [
+      "C:\\Users\\kabada\\.conda\\envs\\alphagenome_510719_env\\python.exe"
+    ]
+  },
+  "original_tests": {
+    "passed": true,
+    "report_path": null
+  },
+  "timestamp": 1757511853.7803915,
+  "conda_available": true,
+  "pythonpath_final": "E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\alphagenome;E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\alphagenome\\source;E:\\code\\fastMCP\\fastMCP\\mcp-repo-output\\workspace\\alphagenome",
+  "llm_used": {
+    "provider": "openai",
+    "model": "gpt-4o",
+    "did_plan": false,
+    "did_repair": false
+  },
+  "pip_policy": {
+    "only_binary": true,
+    "retries": 2,
+    "timeout": 60,
+    "mirror": null
+  }
+}

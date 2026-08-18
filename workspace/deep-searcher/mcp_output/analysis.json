@@ -1,0 +1,147 @@
+{
+  "summary": {
+    "repository_url": "https://github.com/zilliztech/deep-searcher",
+    "summary": "Repository: zilliztech/deep-searcher\nCommit: 67d2a6b49f3103b37ed50716cb319e32f2f705ea\nFiles analyzed: 194\n\nEstimated tokens: 2.9M",
+    "file_tree": "Directory structure:\n└── zilliztech-deep-searcher/\n    ├── README.md\n    ├── CONTRIBUTING.md\n    ├── Dockerfile\n    ├── env.example\n    ├── LICENSE\n    ├── main.py\n    ├── MAINTAINERS\n    ├── Makefile\n    ├── mkdocs.yml\n    ├── OWNERS\n    ├── OWNERS_ALIASES\n    ├── pyproject.toml\n    ├── uv.lock\n    ├── .python-version\n    ├── deepsearcher/\n    │   ├── __init__.py\n    │   ├── cli.py\n    │   ├── config.yaml\n    │   ├── configuration.py\n    │   ├── offline_loading.py\n    │   ├── online_query.py\n    │   ├── agent/\n    │   │   ├── __init__.py\n    │   │   ├── base.py\n    │   │   ├── chain_of_rag.py\n    │   │   ├── collection_router.py\n    │   │   ├── deep_search.py\n    │   │   ├── naive_rag.py\n    │   │   └── rag_router.py\n    │   ├── embedding/\n    │   │   ├── __init__.py\n    │   │   ├── base.py\n    │   │   ├── bedrock_embedding.py\n    │   │   ├── fastembed_embdding.py\n    │   │   ├── gemini_embedding.py\n    │   │   ├── glm_embedding.py\n    │   │   ├── milvus_embedding.py\n    │   │   ├── novita_embedding.py\n    │   │   ├── ollama_embedding.py\n    │   │   ├── openai_embedding.py\n    │   │   ├── ppio_embedding.py\n    │   │   ├── sentence_transformer_embedding.py\n    │   │   ├── siliconflow_embedding.py\n    │   │   ├── volcengine_embedding.py\n    │   │   ├── voyage_embedding.py\n    │   │   └── watsonx_embedding.py\n    │   ├── llm/\n    │   │   ├── __init__.py\n    │   │   ├── aliyun.py\n    │   │   ├── anthropic_llm.py\n    │   │   ├── azure_openai.py\n    │   │   ├── base.py\n    │   │   ├── bedrock.py\n    │   │   ├── deepseek.py\n    │   │   ├── gemini.py\n    │   │   ├── glm.py\n    │   │   ├── novita.py\n    │   │   ├── ollama.py\n    │   │   ├── openai_llm.py\n    │   │   ├── ppio.py\n    │   │   ├── siliconflow.py\n    │   │   ├── together_ai.py\n    │   │   ├── volcengine.py\n    │   │   ├── watsonx.py\n    │   │   └── xai.py\n    │   ├── loader/\n    │   │   ├── __init__.py\n    │   │   ├── splitter.py\n    │   │   ├── file_loader/\n    │   │   │   ├── __init__.py\n    │   │   │   ├── base.py\n    │   │   │   ├── docling_loader.py\n    │   │   │   ├── json_loader.py\n    │   │   │   ├── pdf_loader.py\n    │   │   │   ├── text_loader.py\n    │   │   │   └── unstructured_loader.py\n    │   │   └── web_crawler/\n    │   │       ├── __init__.py\n    │   │       ├── base.py\n    │   │       ├── crawl4ai_crawler.py\n    │   │       ├── docling_crawler.py\n    │   │       ├── firecrawl_crawler.py\n    │   │       └── jina_crawler.py\n    │   ├── utils/\n    │   │   ├── __init__.py\n    │   │   └── log.py\n    │   └── vector_db/\n    │       ├── __init__.py\n    │       ├── azure_search.py\n    │       ├── base.py\n    │       ├── milvus.py\n    │       ├── oracle.py\n    │       └── qdrant.py\n    ├── docs/\n    │   ├── README.md\n    │   ├── future_plans.md\n    │   ├── index.md\n    │   ├── configuration/\n    │   │   ├── embedding.md\n    │   │   ├── file_loader.md\n    │   │   ├── index.md\n    │   │   ├── llm.md\n    │   │   ├── vector_db.md\n    │   │   └── web_crawler.md\n    │   ├── contributing/\n    │   │   └── index.md\n    │   ├── examples/\n    │   │   ├── basic_example.md\n    │   │   ├── docling.md\n    │   │   ├── firecrawl.md\n    │   │   ├── index.md\n    │   │   ├── oracle.md\n    │   │   └── unstructured.md\n    │   ├── faq/\n    │   │   └── index.md\n    │   ├── installation/\n    │   │   ├── development.md\n    │   │   ├── index.md\n    │   │   └── pip.md\n    │   ├── integrations/\n    │   │   └── index.md\n    │   ├── overrides/\n    │   │   └── .gitkeep\n    │   ├── stylesheets/\n    │   │   └── extra.css\n    │   └── usage/\n    │       ├── cli.md\n    │       ├── deployment.md\n    │       ├── index.md\n    │       └── quick_start.md\n    ├── evaluation/\n    │   ├── README.md\n    │   ├── eval_config.yaml\n    │   └── evaluate.py\n    ├── examples/\n    │   ├── basic_example.py\n    │   ├── basic_example_azuresearch.py\n    │   ├── basic_example_oracle.py\n    │   ├── basic_watsonx_example.py\n    │   ├── load_and_crawl_using_docling.py\n    │   ├── load_local_file_using_unstructured.py\n    │   ├── load_website_using_firecrawl.py\n    │   └── data/\n    │       ├── 2wikimultihopqa.json\n    │       └── 2wikimultihopqa_corpus.json\n    ├── tests/\n    │   ├── __init__.py\n    │   ├── agent/\n    │   │   ├── __init__.py\n    │   │   ├── test_base.py\n    │   │   ├── test_chain_of_rag.py\n    │   │   ├── test_collection_router.py\n    │   │   ├── test_deep_search.py\n    │   │   ├── test_naive_rag.py\n    │   │   └── test_rag_router.py\n    │   ├── embedding/\n    │   │   ├── __init__.py\n    │   │   ├── test_base.py\n    │   │   ├── test_bedrock_embedding.py\n    │   │   ├── test_fastembed_embedding.py\n    │   │   ├── test_gemini_embedding.py\n    │   │   ├── test_glm_embedding.py\n    │   │   ├── test_milvus_embedding.py\n    │   │   ├── test_novita_embedding.py\n    │   │   ├── test_ollama_embedding.py\n    │   │   ├── test_openai_embedding.py\n    │   │   ├── test_ppio_embedding.py\n    │   │   ├── test_sentence_transformer_embedding.py\n    │   │   ├── test_siliconflow_embedding.py\n    │   │   ├── test_volcengine_embedding.py\n    │   │   ├── test_voyage_embedding.py\n    │   │   └── test_watsonx_embedding.py\n    │   ├── llm/\n    │   │   ├── __init__.py\n    │   │   ├── test_aliyun.py\n    │   │   ├── test_anthropic.py\n    │   │   ├── test_azure_openai.py\n    │   │   ├── test_base.py\n    │   │   ├── test_bedrock.py\n    │   │   ├── test_deepseek.py\n    │   │   ├── test_gemini.py\n    │   │   ├── test_glm.py\n    │   │   ├── test_novita.py\n    │   │   ├── test_ollama.py\n    │   │   ├── test_openai.py\n    │   │   ├── test_ppio.py\n    │   │   ├── test_siliconflow.py\n    │   │   ├── test_together_ai.py\n    │   │   ├── test_volcengine.py\n    │   │   ├── test_watsonx.py\n    │   │   └── test_xai.py\n    │   ├── loader/\n    │   │   ├── __init__.py\n    │   │   ├── test_splitter.py\n    │   │   ├── file_loader/\n    │   │   │   ├── __init__.py\n    │   │   │   ├── test_base.py\n    │   │   │   ├── test_docling_loader.py\n    │   │   │   ├── test_json_loader.py\n    │   │   │   ├── test_pdf_loader.py\n    │   │   │   ├── test_text_loader.py\n    │   │   │   └── test_unstructured_loader.py\n    │   │   └── web_crawler/\n    │   │       ├── __init__.py\n    │   │       ├── test_base.py\n    │   │       ├── test_crawl4ai_crawler.py\n    │   │       ├── test_docling_crawler.py\n    │   │       ├── test_firecrawl_crawler.py\n    │   │       └── test_jina_crawler.py\n    │   ├── utils/\n    │   │   └── test_log.py\n    │   └── vector_db/\n    │       ├── test_azure_search.py\n    │       ├── test_base.py\n    │       ├── test_milvus.py\n    │       ├── test_oracle.py\n    │       └── test_qdrant.py\n    └── .github/\n        ├── mergify.yml\n        ├── ISSUE_TEMPLATE/\n        │   ├── bug_report.md\n        │   └── feature_request.md\n        └── workflows/\n            ├── cd-docs.yml\n            ├── ci-docs.yml\n            ├── docs.yml\n            ├── release.yml\n            └── ruff.yml\n",
+    "content": {},
+    "processed_by": "gitingest",
+    "success": true
+  },
+  "structure": {
+    "packages": [
+      "source.deepsearcher",
+      "source.deepsearcher.agent",
+      "source.deepsearcher.embedding",
+      "source.deepsearcher.llm",
+      "source.deepsearcher.loader",
+      "source.deepsearcher.utils",
+      "source.deepsearcher.vector_db",
+      "source.tests",
+      "source.tests.agent",
+      "source.tests.embedding",
+      "source.tests.llm",
+      "source.tests.loader"
+    ]
+  },
+  "dependencies": {
+    "has_environment_yml": false,
+    "has_requirements_txt": false,
+    "pyproject": true,
+    "setup_cfg": false,
+    "setup_py": false
+  },
+  "entry_points": {
+    "imports": [],
+    "cli": [],
+    "modules": []
+  },
+  "llm_analysis": {
+    "core_modules": [
+      {
+        "package": "source.deepsearcher.agent",
+        "module": "chain_of_rag",
+        "functions": [
+          "chain_of_rag_function1",
+          "chain_of_rag_function2"
+        ],
+        "classes": [
+          "ChainOfRAG"
+        ],
+        "description": "Implements a chain-of-retrieval-augmented-generation (RAG) strategy for querying and combining results."
+      },
+      {
+        "package": "source.deepsearcher.embedding",
+        "module": "openai_embedding",
+        "functions": [
+          "generate_openai_embedding"
+        ],
+        "classes": [
+          "OpenAIEmbedding"
+        ],
+        "description": "Handles embedding generation using OpenAI's API."
+      },
+      {
+        "package": "source.deepsearcher.llm",
+        "module": "openai_llm",
+        "functions": [
+          "query_openai_llm"
+        ],
+        "classes": [
+          "OpenAILLM"
+        ],
+        "description": "Provides an interface to interact with OpenAI's large language models."
+      },
+      {
+        "package": "source.deepsearcher.loader.file_loader",
+        "module": "pdf_loader",
+        "functions": [
+          "load_pdf"
+        ],
+        "classes": [
+          "PDFLoader"
+        ],
+        "description": "Loads and processes PDF files for downstream tasks."
+      },
+      {
+        "package": "source.deepsearcher.vector_db",
+        "module": "milvus",
+        "functions": [
+          "connect_to_milvus",
+          "query_milvus"
+        ],
+        "classes": [
+          "MilvusVectorDB"
+        ],
+        "description": "Integration with Milvus vector database for storing and querying embeddings."
+      }
+    ],
+    "cli_commands": [
+      {
+        "name": "deepsearcher-cli",
+        "module": "source.deepsearcher.cli",
+        "description": "Command-line interface for interacting with the Deep Searcher framework."
+      }
+    ],
+    "import_strategy": {
+      "primary": "import",
+      "fallback": "cli",
+      "confidence": 0.9
+    },
+    "dependencies": {
+      "required": [
+        "openai",
+        "milvus",
+        "PyYAML",
+        "requests",
+        "sentence-transformers"
+      ],
+      "optional": [
+        "azure-search",
+        "oracle-db",
+        "volcengine-sdk"
+      ]
+    },
+    "risk_assessment": {
+      "import_feasibility": 0.85,
+      "intrusiveness_risk": "medium",
+      "complexity": "medium"
+    }
+  },
+  "deepwiki_analysis": {
+    "repo_url": "https://github.com/zilliztech/deep-searcher",
+    "repo_name": "deep-searcher",
+    "analysis": "",
+    "model": "gpt-5",
+    "source": "llm_direct_analysis",
+    "success": true
+  },
+  "deepwiki_options": {
+    "enabled": true,
+    "model": "gpt-5"
+  },
+  "risk": {
+    "import_feasibility": 0.85,
+    "intrusiveness_risk": "medium",
+    "complexity": "medium"
+  }
+}

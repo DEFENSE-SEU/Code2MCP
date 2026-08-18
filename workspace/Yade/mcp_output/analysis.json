@@ -1,0 +1,143 @@
+{
+  "summary": {
+    "repository_url": "https://github.com/gohsianghuat/Yade",
+    "summary": "Repository: gohsianghuat/Yade\nCommit: main\nFiles analyzed: 100+\n\nEstimated tokens: 300k+",
+    "file_tree": "...",
+    "content": {},
+    "processed_by": "gitingest",
+    "success": true
+  },
+  "structure": {
+    "packages": [
+      "source.yade.gui",
+      "source.yade.tests",
+      "source.yade.py_geometry",
+      "source.yade.pack",
+      "source.yade.runtime"
+    ]
+  },
+  "dependencies": {
+    "has_environment_yml": false,
+    "has_requirements_txt": false,
+    "pyproject": false,
+    "setup_cfg": false,
+    "setup_py": true
+  },
+  "entry_points": {
+    "imports": [],
+    "cli": [],
+    "modules": []
+  },
+  "llm_analysis": {
+    "core_modules": [
+      {
+        "package": "source.yade.gui",
+        "module": "qt4",
+        "classes": [
+          "GLViewer",
+          "SerializableEditor",
+          "OpenGLManager"
+        ],
+        "description": "Provides a graphical user interface based on Qt4, including OpenGL rendering and interaction."
+      },
+      {
+        "package": "source.yade.gui",
+        "module": "qt5",
+        "classes": [
+          "GLViewer",
+          "SerializableEditor",
+          "OpenGLManager"
+        ],
+        "description": "Provides a graphical user interface based on Qt5, similar to the Qt4 module but with support for a more modern version of Qt."
+      },
+      {
+        "package": "source.yade.tests",
+        "module": "",
+        "functions": [
+          "test_core",
+          "test_engines",
+          "test_pbc",
+          "test_wrapper"
+        ],
+        "description": "Contains test modules for verifying core functions and engines."
+      },
+      {
+        "package": "source.yade.py_geometry",
+        "module": "",
+        "functions": [
+          "bodiesHandling",
+          "gridpfacet"
+        ],
+        "description": "Geometry processing module, supporting polyhedron and mesh-related operations. (Package path needs verification)"
+      },
+      {
+        "package": "source.yade.pack",
+        "module": "",
+        "functions": [
+          "_packObb",
+          "_packPredicates",
+          "_packSpheres"
+        ],
+        "description": "Provides particle packing and geometry processing functionality, supporting various packing algorithms. (Package path needs verification)"
+      },
+      {
+        "package": "source.yade.runtime",
+        "module": "",
+        "functions": [
+          "timing",
+          "system"
+        ],
+        "description": "Runtime management module, providing system configuration and time management functions. (Package path needs verification)"
+      }
+    ],
+    "cli_commands": [
+      {
+        "command": "yade",
+        "description": "Batch command for running predefined simulation scenarios."
+      },
+      {
+        "command": "yade --test",
+        "description": "Runs the default test scene to verify functionality."
+      },
+      {
+        "command": "install-requires.sh",
+        "description": "Installation script for configuring the project environment on an Ubuntu system."
+      }
+    ],
+    "import_strategy": {
+      "primary": "import",
+      "fallback": "cli",
+      "confidence": 0.7
+    },
+    "dependencies": {
+      "required": [
+        "PyQt5"
+      ],
+      "optional": [
+        "matplotlib"
+      ]
+    },
+    "risk_assessment": {
+      "import_feasibility": 0.7,
+      "intrusiveness_risk": "low",
+      "complexity": "high"
+    }
+  },
+  "deepwiki_analysis": {
+    "repo_url": "https://github.com/gohsianghuat/Yade",
+    "repo_name": "Yade",
+    "analysis": "### Analysis Report: GitHub Repository Yade (https://github.com/gohsianghuat/Yade)\n\n#### 1. What are the main functions and purposes of this repository?\nFrom the repository name and initial information, \"Yade\" appears to be a development project. However, the DeepWiki page indicates that the repository has not yet been indexed, so its code structure, documentation, and dependencies cannot be explored directly through automated tools. This means we cannot quickly obtain a functional description.\n\nBased on the name, \"Yade\" could be a tool, framework, or application, possibly involving data processing, development tools, or a solution for a specific domain. To confirm its purpose, it would be necessary to manually inspect the repository's README file (if it exists) or other documentation.\n\nRecommendations:\n- If a README file exists, check its content to understand the project's goals and functionality.\n- If there is no README file, it is recommended to contact the project maintainer or examine the code structure to infer its purpose.\n\n#### 2. What are the core modules and entry points of this repository?\nSince the DeepWiki page shows that the repository has not been indexed, we cannot directly obtain information about its code structure and entry points. Typically, core modules and entry points can be identified in the following ways:\n- Check the main directory structure of the project for common entry files (e.g., `main.py`, `index.js`, `app.py`, etc.).\n- Look for clear module divisions (e.g., `src/`, `lib/`, `core/` directories).\n- Check for configuration files (e.g., `package.json`, `requirements.txt`, `Dockerfile`, etc.), which often point to the project's core modules.\n\nRecommendations:\n- Manually browse the repository's file structure to find entry points and core modules.\n- If the project has documentation or comments, check for descriptions of module divisions.\n\n#### 3. What are the main technology stacks and dependencies used by this repository?\nSince the repository has not been indexed, its technology stack and dependencies cannot be obtained directly. Typically, the technology stack can be identified in the following ways:\n- Check the project's configuration files (e.g., `requirements.txt`, `package.json`, `pom.xml`, etc.), which usually list the project's dependencies.\n- Examine the file extensions and content of the code files. For example, `.py` files usually indicate the use of Python, while `.js` files indicate JavaScript, etc.\n- If the project uses a specific framework or library, this can often be identified from the code structure or import statements.\n\nRecommendations:\n- Manually inspect configuration files and code to determine the technology stack and dependencies.\n- If the project has documentation, check for information about the technology stack.\n\n#### 4. Is this project suitable for conversion to an MCP (Model Context Protocol) service? Why?\n\nWithout detailed information about the project's functionality and code structure, it is difficult to accurately assess its suitability for conversion to an MCP service. However, a preliminary assessment can be made based on general principles:\n\n- **Suitability**:\n  - If Yade provides a set of independent, reusable functional modules (e.g., data processing, file operations, API calls), it is suitable for conversion to an MCP service.\n  - If the project's functionality can be exposed through a clear API, it is also suitable for conversion.\n\n- **Unsuitability**:\n  - If Yade is a highly integrated application (e.g., a desktop application or a command-line tool with complex state), conversion may be more difficult.\n  - If the project's functionality is highly dependent on a specific environment or user interaction, it may not be suitable for conversion to a service.\n\n**Recommendations:**\n- First, clarify the project's core functionality and architecture.\n- If it is suitable for conversion, design a service interface based on MCP standards.\n- If conversion is difficult, consider encapsulating only some of its core functional modules as services.",
+    "model": "gpt-4o",
+    "source": "llm_direct_analysis",
+    "success": true
+  },
+  "deepwiki_options": {
+    "enabled": true,
+    "model": "gpt-4o"
+  },
+  "risk": {
+    "import_feasibility": 0.7,
+    "intrusiveness_risk": "low",
+    "complexity": "high"
+  }
+}

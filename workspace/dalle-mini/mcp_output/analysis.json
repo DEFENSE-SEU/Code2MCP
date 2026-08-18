@@ -1,0 +1,169 @@
+{
+  "summary": {
+    "repository_url": "https://github.com/borisdayma/dalle-mini",
+    "summary": "Repository: borisdayma/dalle-mini\nCommit: f0be4de610285a002052024a1e096126f9452cc4\nFiles analyzed: 46\n\nEstimated tokens: 65.5k",
+    "file_tree": "Directory structure:\n└── borisdayma-dalle-mini/\n    ├── README.md\n    ├── CITATION.cff\n    ├── LICENSE\n    ├── Makefile\n    ├── pyproject.toml\n    ├── run_docker_image.sh\n    ├── setup.cfg\n    ├── setup.py\n    ├── app/\n    │   ├── gradio/\n    │   │   ├── app.py\n    │   │   └── backend.py\n    │   └── streamlit/\n    │       ├── app.py\n    │       └── backend.py\n    ├── Docker/\n    │   ├── README.md\n    │   ├── build_docker.sh\n    │   └── Dockerfile\n    ├── src/\n    │   └── dalle_mini/\n    │       ├── __init__.py\n    │       ├── data.py\n    │       └── model/\n    │           ├── __init__.py\n    │           ├── configuration.py\n    │           ├── modeling.py\n    │           ├── partitions.py\n    │           ├── processor.py\n    │           ├── text.py\n    │           ├── tokenizer.py\n    │           └── utils.py\n    ├── tools/\n    │   ├── dataset/\n    │   │   └── encode_dataset.ipynb\n    │   ├── inference/\n    │   │   ├── inference_pipeline.ipynb\n    │   │   └── run_infer_notebook.sh\n    │   └── train/\n    │       ├── embeddings_retrain_preparation.ipynb\n    │       ├── sweep.yaml\n    │       ├── train.py\n    │       ├── config/\n    │       │   ├── mega/\n    │       │   │   └── config.json\n    │       │   ├── micro/\n    │       │   │   └── config.json\n    │       │   ├── mini/\n    │       │   │   └── config.json\n    │       │   └── mini_glu/\n    │       │       └── config.json\n    │       └── scalable_shampoo/\n    │           ├── README.md\n    │           ├── distributed_shampoo.py\n    │           ├── quantization_utils.py\n    │           ├── sm3.py\n    │           └── symmetric_matrices/\n    │               └── symmetric_matrices.py\n    └── .github/\n        ├── FUNDING.yml\n        └── workflows/\n            ├── check_size.yml\n            ├── pypi_release.yml\n            ├── style.yml\n            ├── sync_to_hub.yml.backup\n            └── sync_to_hub_debug.yml\n",
+    "content": {},
+    "processed_by": "gitingest",
+    "success": true
+  },
+  "structure": {
+    "packages": [
+      "source.src.dalle_mini"
+    ]
+  },
+  "dependencies": {
+    "has_environment_yml": false,
+    "has_requirements_txt": false,
+    "pyproject": true,
+    "setup_cfg": true,
+    "setup_py": true
+  },
+  "entry_points": {
+    "imports": [],
+    "cli": [],
+    "modules": []
+  },
+  "llm_analysis": {
+    "core_modules": [
+      {
+        "package": "source.src.dalle_mini",
+        "module": "data",
+        "functions": [
+          "load_data",
+          "process_data"
+        ],
+        "classes": [],
+        "description": "Handles data loading and preprocessing for the DALL-E Mini model."
+      },
+      {
+        "package": "source.src.dalle_mini.model",
+        "module": "configuration",
+        "functions": [
+          "load_config"
+        ],
+        "classes": [
+          "ModelConfig"
+        ],
+        "description": "Manages model configuration settings."
+      },
+      {
+        "package": "source.src.dalle_mini.model",
+        "module": "modeling",
+        "functions": [
+          "build_model",
+          "train_model",
+          "evaluate_model"
+        ],
+        "classes": [
+          "DalleMiniModel"
+        ],
+        "description": "Core module for building, training, and evaluating the DALL-E Mini model."
+      },
+      {
+        "package": "source.src.dalle_mini.model",
+        "module": "partitions",
+        "functions": [
+          "partition_data"
+        ],
+        "classes": [],
+        "description": "Handles data partitioning for distributed training."
+      },
+      {
+        "package": "source.src.dalle_mini.model",
+        "module": "processor",
+        "functions": [
+          "process_input",
+          "process_output"
+        ],
+        "classes": [],
+        "description": "Processes input and output data for the model."
+      },
+      {
+        "package": "source.src.dalle_mini.model",
+        "module": "text",
+        "functions": [
+          "tokenize_text",
+          "detokenize_text"
+        ],
+        "classes": [],
+        "description": "Handles text tokenization and detokenization for the model."
+      },
+      {
+        "package": "source.src.dalle_mini.model",
+        "module": "tokenizer",
+        "functions": [
+          "load_tokenizer",
+          "save_tokenizer"
+        ],
+        "classes": [
+          "Tokenizer"
+        ],
+        "description": "Manages tokenization utilities for the model."
+      },
+      {
+        "package": "source.src.dalle_mini.model",
+        "module": "utils",
+        "functions": [
+          "log_metrics",
+          "save_checkpoint",
+          "load_checkpoint"
+        ],
+        "classes": [],
+        "description": "Utility functions for logging, saving, and loading model checkpoints."
+      }
+    ],
+    "cli_commands": [
+      {
+        "name": "train",
+        "module": "source.tools.train.train",
+        "description": "CLI command to train the DALL-E Mini model."
+      },
+      {
+        "name": "inference",
+        "module": "source.tools.inference.inference_pipeline",
+        "description": "CLI command to run inference using the DALL-E Mini model."
+      }
+    ],
+    "import_strategy": {
+      "primary": "import",
+      "fallback": "cli",
+      "confidence": 0.9
+    },
+    "dependencies": {
+      "required": [
+        "torch",
+        "transformers",
+        "numpy",
+        "gradio",
+        "streamlit"
+      ],
+      "optional": [
+        "wandb",
+        "optuna"
+      ]
+    },
+    "risk_assessment": {
+      "import_feasibility": 0.85,
+      "intrusiveness_risk": "medium",
+      "complexity": "medium"
+    }
+  },
+  "deepwiki_analysis": {
+    "repo_url": "https://github.com/borisdayma/dalle-mini",
+    "repo_name": "dalle-mini",
+    "analysis": "",
+    "model": "gpt-5",
+    "source": "llm_direct_analysis",
+    "success": true
+  },
+  "deepwiki_options": {
+    "enabled": true,
+    "model": "gpt-5"
+  },
+  "risk": {
+    "import_feasibility": 0.85,
+    "intrusiveness_risk": "medium",
+    "complexity": "medium"
+  }
+}

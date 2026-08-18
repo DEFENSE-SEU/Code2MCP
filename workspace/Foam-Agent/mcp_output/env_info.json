@@ -1,0 +1,15 @@
+{
+  "environment": {
+    "type": "conda",
+    "name": "Foam-Agent_847955_env",
+    "files": {},
+    "python": "3.10",
+    "exec_prefix": []
+  },
+  "original_tests": {
+    "passed": true,
+    "report_path": null
+  },
+  "timestamp": 1755848930.0114202,
+  "conda_available": true
+}
